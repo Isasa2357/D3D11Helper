@@ -1,0 +1,115 @@
+cmake_minimum_required(VERSION 3.20)
+
+project(D3D11Helper
+    VERSION 0.1.0
+    LANGUAGES CXX
+)
+
+option(D3D11HELPER_BUILD_SAMPLES "Build D3D11Helper samples" ON)
+option(D3D11HELPER_BUILD_TESTS "Build D3D11Helper tests" ON)
+option(D3D11HELPER_ENABLE_WARNINGS "Enable compiler warnings for D3D11Helper" ON)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(NOT WIN32)
+    message(WARNING "D3D11Helper is a Direct3D 11 helper library and can only be built on Windows. No targets will be generated on this platform.")
+    return()
+endif()
+
+set(D3D11HELPER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/D3D11Helper")
+set(D3D11HELPER_CORE_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Core")
+set(D3D11HELPER_FRAMEWORK_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Framework")
+
+set(D3D11HELPER_SOURCES
+    src/ThrowIfFailed.cpp
+    src/DxgiUtil.cpp
+    src/DxgiAdapterSelector.cpp
+    src/D3D11Debug.cpp
+    src/D3D11DeviceContext.cpp
+    src/D3D11Core.cpp
+    src/D3D11Fence.cpp
+    src/D3D11FormatUtil.cpp
+    src/D3D11SharedResource.cpp
+    src/D3D11Helpers.cpp
+    src/D3D11StagingBuffer.cpp
+    src/D3D11ComputePipeline.cpp
+    src/D3D11GraphicsPipeline.cpp
+    src/D3D11ShaderCompiler.cpp
+    src/D3D11SwapChainHelper.cpp
+)
+
+set(D3D11HELPER_PUBLIC_HEADERS
+    include/D3D11Helper/D3D11Core/D3D11Common.hpp
+    include/D3D11Helper/D3D11Core/D3D11Core.hpp
+    include/D3D11Helper/D3D11Core/D3D11CoreConfig.hpp
+    include/D3D11Helper/D3D11Core/D3D11Debug.hpp
+    include/D3D11Helper/D3D11Core/D3D11DeviceContext.hpp
+    include/D3D11Helper/D3D11Core/D3D11Fence.hpp
+    include/D3D11Helper/D3D11Core/D3D11FormatUtil.hpp
+    include/D3D11Helper/D3D11Core/D3D11SharedResource.hpp
+    include/D3D11Helper/D3D11Core/DxgiAdapterSelector.hpp
+    include/D3D11Helper/D3D11Core/DxgiUtil.hpp
+    include/D3D11Helper/D3D11Core/ThrowIfFailed.hpp
+    include/D3D11Helper/D3D11Framework/D3D11ComputePipeline.hpp
+    include/D3D11Helper/D3D11Framework/D3D11Framework.hpp
+    include/D3D11Helper/D3D11Framework/D3D11GraphicsPipeline.hpp
+    include/D3D11Helper/D3D11Framework/D3D11Helpers.hpp
+    include/D3D11Helper/D3D11Framework/D3D11Resource.hpp
+    include/D3D11Helper/D3D11Framework/D3D11ShaderCompiler.hpp
+    include/D3D11Helper/D3D11Framework/D3D11StagingBuffer.hpp
+    include/D3D11Helper/D3D11Framework/D3D11SwapChainHelper.hpp
+)
+
+add_library(D3D11Helper STATIC ${D3D11HELPER_SOURCES} ${D3D11HELPER_PUBLIC_HEADERS})
+add_library(D3D11Helper::D3D11Helper ALIAS D3D11Helper)
+
+target_include_directories(D3D11Helper
+    PUBLIC
+        "${D3D11HELPER_INCLUDE_DIR}"
+    PRIVATE
+        "${D3D11HELPER_CORE_INCLUDE_DIR}"
+        "${D3D11HELPER_FRAMEWORK_INCLUDE_DIR}"
+)
+
+target_compile_definitions(D3D11Helper
+    PUBLIC
+        WIN32_LEAN_AND_MEAN
+        NOMINMAX
+)
+
+target_link_libraries(D3D11Helper
+    PUBLIC
+        d3d11
+        dxgi
+        dxguid
+        d3dcompiler
+        dxcompiler
+        user32
+)
+
+if(MSVC)
+    if(D3D11HELPER_ENABLE_WARNINGS)
+        target_compile_options(D3D11Helper PRIVATE /W4 /permissive-)
+    endif()
+else()
+    if(D3D11HELPER_ENABLE_WARNINGS)
+        target_compile_options(D3D11Helper PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+endif()
+
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" PREFIX "Source" FILES ${D3D11HELPER_SOURCES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" PREFIX "Header" FILES ${D3D11HELPER_PUBLIC_HEADERS})
+
+include(cmake/D3D11HelperDxcRuntime.cmake)
+
+if(D3D11HELPER_BUILD_SAMPLES)
+    add_subdirectory(sample)
+endif()
+
+if(D3D11HELPER_BUILD_TESTS)
+    include(CTest)
+    enable_testing()
+    add_subdirectory(test)
+endif()
