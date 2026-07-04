@@ -1,5 +1,5 @@
 add_executable(D3D11HelperTest
-    "${PROJECT_SOURCE_DIR}/src/D3D11HelperTest.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/D3D11HelperTest.cpp"
 )
 
 target_link_libraries(D3D11HelperTest
@@ -7,8 +7,10 @@ target_link_libraries(D3D11HelperTest
         D3D11Helper::D3D11Helper
 )
 
-# D3D11HelperTest.cpp still uses legacy relative includes such as
-# "../D3D11Core/D3D11Common.hpp". These two include roots keep that file
+# D3D11HelperTest.cpp is intentionally kept outside src/ so that
+# projects can copy/add src/ as library implementation files only.
+# The test still uses legacy relative includes such as
+# "../D3D11Core/D3D11Common.hpp", so these include roots keep it
 # buildable without rewriting the test source.
 target_include_directories(D3D11HelperTest
     PRIVATE
