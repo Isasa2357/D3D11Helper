@@ -217,11 +217,18 @@ ComPtr<ID3D11SamplerState> CreateSampler(
 // --------------------------------------------------------------------------
 // 共有リソース生成
 //   D3D11/D3D12 間で共有するテクスチャを D3D11 側で作成する。
-//   SHARED_NTHANDLE | SHARED フラグが付く。
+//   SharedFence 用は SHARED_NTHANDLE | SHARED。
+//   KeyedMutex 用は SHARED_NTHANDLE | SHARED_KEYEDMUTEX。
 // --------------------------------------------------------------------------
+enum class D3D11SharedTextureSyncMode {
+    SharedFence,
+    KeyedMutex
+};
+
 D3D11Resource CreateSharedTexture2D(
     D3D11Core& core,
     UINT width, UINT height, DXGI_FORMAT format,
-    UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET);
+    UINT bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET,
+    D3D11SharedTextureSyncMode syncMode = D3D11SharedTextureSyncMode::SharedFence);
 
 } // namespace D3D11CoreLib

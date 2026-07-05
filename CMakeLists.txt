@@ -36,6 +36,7 @@ set(D3D11HELPER_SOURCES
     src/D3D11FormatUtil.cpp
     src/D3D11SharedResource.cpp
     src/D3D11Helpers.cpp
+    src/D3D11SharedTextureSync.cpp
     src/D3D11StagingBuffer.cpp
     src/D3D11ComputePipeline.cpp
     src/D3D11GraphicsPipeline.cpp
