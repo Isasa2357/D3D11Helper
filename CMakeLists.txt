@@ -28,6 +28,7 @@ set(D3D11HELPER_SOURCES
     src/DxgiAdapterSelector.cpp
     src/D3D11Debug.cpp
     src/D3D11DeviceContext.cpp
+    src/D3D11DeferredContext.cpp
     src/D3D11Core.cpp
     src/D3D11Fence.cpp
     src/D3D11FormatUtil.cpp
@@ -46,6 +47,7 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Core/D3D11CoreConfig.hpp
     include/D3D11Helper/D3D11Core/D3D11Debug.hpp
     include/D3D11Helper/D3D11Core/D3D11DeviceContext.hpp
+    include/D3D11Helper/D3D11Core/D3D11DeferredContext.hpp
     include/D3D11Helper/D3D11Core/D3D11Fence.hpp
     include/D3D11Helper/D3D11Core/D3D11FormatUtil.hpp
     include/D3D11Helper/D3D11Core/D3D11SharedResource.hpp
