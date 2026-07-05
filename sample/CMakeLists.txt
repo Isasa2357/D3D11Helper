@@ -8,6 +8,13 @@ function(d3d11helper_add_sample target_name sample_dir)
             D3D11Helper::D3D11Helper
     )
 
+    target_compile_definitions(${target_name} PRIVATE
+        D3D11HELPER_SAMPLE_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+    )
+
+    if(MSVC)
+        target_compile_options(${target_name} PRIVATE /utf-8 /EHsc)
+    endif()
 
     set_target_properties(${target_name} PROPERTIES
         FOLDER "D3D11Helper/Samples"
@@ -16,7 +23,14 @@ function(d3d11helper_add_sample target_name sample_dir)
 
     d3d11helper_copy_dxc_runtime(${target_name})
 
-    # Keep loose sample assets next to the executable when a sample directory has them.
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../shaders")
+        add_custom_command(TARGET ${target_name} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_CURRENT_SOURCE_DIR}/../shaders"
+                "$<TARGET_FILE_DIR:${target_name}>/shaders"
+        )
+    endif()
+
     file(GLOB sample_assets CONFIGURE_DEPENDS
         "${CMAKE_CURRENT_SOURCE_DIR}/${sample_dir}/*.hlsl"
         "${CMAKE_CURRENT_SOURCE_DIR}/${sample_dir}/*.cso"
@@ -37,3 +51,5 @@ d3d11helper_add_sample(D3D11Sample_03_HelloTriangle    03_HelloTriangle)
 d3d11helper_add_sample(D3D11Sample_04_BufferCompute    04_BufferCompute)
 d3d11helper_add_sample(D3D11Sample_05_DynamicStreaming 05_DynamicStreaming)
 d3d11helper_add_sample(D3D11Sample_06_SharedResource   06_SharedResource)
+d3d11helper_add_sample(D3D11Sample_07_ProcessingFusedConvertResize 07_ProcessingFusedConvertResize)
+d3d11helper_add_sample(D3D11Sample_08_ProcessingP010Rgba16 08_ProcessingP010Rgba16)

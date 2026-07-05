@@ -21,6 +21,7 @@ endif()
 set(D3D11HELPER_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include/D3D11Helper")
 set(D3D11HELPER_CORE_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Core")
 set(D3D11HELPER_FRAMEWORK_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Framework")
+set(D3D11HELPER_PROCESSING_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Processing")
 
 set(D3D11HELPER_SOURCES
     src/ThrowIfFailed.cpp
@@ -39,6 +40,15 @@ set(D3D11HELPER_SOURCES
     src/D3D11GraphicsPipeline.cpp
     src/D3D11ShaderCompiler.cpp
     src/D3D11SwapChainHelper.cpp
+    src/D3D11ProcessingTypes.cpp
+    src/D3D11ProcessingContext.cpp
+    src/D3D11ProcessingShaderCache.cpp
+    src/D3D11TextureViews.cpp
+    src/D3D11FormatConverter.cpp
+    src/D3D11Resize.cpp
+    src/D3D11Remap.cpp
+    src/D3D11Composite.cpp
+    src/D3D11FusedPipeline.cpp
 )
 
 set(D3D11HELPER_PUBLIC_HEADERS
@@ -62,6 +72,16 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Framework/D3D11ShaderCompiler.hpp
     include/D3D11Helper/D3D11Framework/D3D11StagingBuffer.hpp
     include/D3D11Helper/D3D11Framework/D3D11SwapChainHelper.hpp
+    include/D3D11Helper/D3D11Processing/D3D11Processing.hpp
+    include/D3D11Helper/D3D11Processing/D3D11ProcessingTypes.hpp
+    include/D3D11Helper/D3D11Processing/D3D11ProcessingContext.hpp
+    include/D3D11Helper/D3D11Processing/D3D11ProcessingShaderCache.hpp
+    include/D3D11Helper/D3D11Processing/D3D11TextureViews.hpp
+    include/D3D11Helper/D3D11Processing/D3D11FormatConverter.hpp
+    include/D3D11Helper/D3D11Processing/D3D11Resize.hpp
+    include/D3D11Helper/D3D11Processing/D3D11Remap.hpp
+    include/D3D11Helper/D3D11Processing/D3D11Composite.hpp
+    include/D3D11Helper/D3D11Processing/D3D11FusedPipeline.hpp
 )
 
 add_library(D3D11Helper STATIC ${D3D11HELPER_SOURCES} ${D3D11HELPER_PUBLIC_HEADERS})
@@ -73,6 +93,7 @@ target_include_directories(D3D11Helper
     PRIVATE
         "${D3D11HELPER_CORE_INCLUDE_DIR}"
         "${D3D11HELPER_FRAMEWORK_INCLUDE_DIR}"
+        "${D3D11HELPER_PROCESSING_INCLUDE_DIR}"
 )
 
 target_compile_definitions(D3D11Helper
@@ -92,6 +113,7 @@ target_link_libraries(D3D11Helper
 )
 
 if(MSVC)
+    target_compile_options(D3D11Helper PRIVATE /utf-8 /EHsc)
     if(D3D11HELPER_ENABLE_WARNINGS)
         target_compile_options(D3D11Helper PRIVATE /W4 /permissive-)
     endif()
@@ -113,5 +135,5 @@ endif()
 if(D3D11HELPER_BUILD_TESTS)
     include(CTest)
     enable_testing()
-    add_subdirectory(test)
+    add_subdirectory(Test)
 endif()

@@ -1,0 +1,98 @@
+﻿#include "D3D11Processing/D3D11ProcessingTypes.hpp"
+#include "D3D11Core/D3D11FormatUtil.hpp"
+
+#include <sstream>
+
+namespace D3D11CoreLib {
+namespace Processing {
+
+bool IsRgbaLikeFormat(DXGI_FORMAT format) noexcept {
+    return format == DXGI_FORMAT_R8G8B8A8_UNORM ||
+           format == DXGI_FORMAT_B8G8R8A8_UNORM ||
+           format == DXGI_FORMAT_R16G16B16A16_FLOAT;
+}
+
+bool IsYuv420Format(DXGI_FORMAT format) noexcept {
+    return format == DXGI_FORMAT_NV12 || format == DXGI_FORMAT_P010;
+}
+
+bool IsSupportedProcessingFormat(DXGI_FORMAT format) noexcept {
+    return IsRgbaLikeFormat(format) || IsYuv420Format(format);
+}
+
+bool IsSupportedRgbaOutputFormat(DXGI_FORMAT format) noexcept {
+    return IsRgbaLikeFormat(format);
+}
+
+bool IsSupportedRemapMapFormat(DXGI_FORMAT format) noexcept {
+    return format == DXGI_FORMAT_R32G32_FLOAT;
+}
+
+bool IsSupportedCompositeFormat(DXGI_FORMAT format) noexcept {
+    return IsRgbaLikeFormat(format);
+}
+
+ProcessingRect ResolveRect(const ProcessingRect& rect, UINT fallbackWidth, UINT fallbackHeight) {
+    ProcessingRect r = rect;
+    if (r.width == 0) {
+        if (r.x < 0 || static_cast<UINT>(r.x) > fallbackWidth) {
+            throw ValidationError("ResolveRect: x is outside fallback width");
+        }
+        r.width = fallbackWidth - static_cast<UINT>(r.x);
+    }
+    if (r.height == 0) {
+        if (r.y < 0 || static_cast<UINT>(r.y) > fallbackHeight) {
+            throw ValidationError("ResolveRect: y is outside fallback height");
+        }
+        r.height = fallbackHeight - static_cast<UINT>(r.y);
+    }
+    return r;
+}
+
+void ValidateRectInside(const ProcessingRect& rect, UINT width, UINT height, const char* functionName, const char* argumentName) {
+    if (rect.width == 0 || rect.height == 0) {
+        std::ostringstream os;
+        os << functionName << ": " << argumentName << " has zero size";
+        throw ValidationError(os.str());
+    }
+    if (rect.x < 0 || rect.y < 0) {
+        std::ostringstream os;
+        os << functionName << ": " << argumentName << " has negative origin";
+        throw ValidationError(os.str());
+    }
+    const UINT x = static_cast<UINT>(rect.x);
+    const UINT y = static_cast<UINT>(rect.y);
+    if (x > width || y > height || rect.width > width - x || rect.height > height - y) {
+        std::ostringstream os;
+        os << functionName << ": " << argumentName << " is outside resource bounds";
+        throw ValidationError(os.str());
+    }
+}
+
+void ValidateEvenSize(UINT width, UINT height, DXGI_FORMAT format, const char* functionName) {
+    if (FormatUtil::RequiresEvenSize(format) && ((width & 1u) != 0u || (height & 1u) != 0u)) {
+        std::ostringstream os;
+        os << functionName << ": format requires even width and height";
+        throw ValidationError(os.str());
+    }
+}
+
+void ValidateYuv420Rect(const ProcessingRect& rect, const char* functionName, const char* argumentName) {
+    if ((static_cast<UINT>(rect.x) & 1u) || (static_cast<UINT>(rect.y) & 1u) ||
+        (rect.width & 1u) || (rect.height & 1u)) {
+        std::ostringstream os;
+        os << functionName << ": " << argumentName << " for YUV420 must have even origin and size";
+        throw ValidationError(os.str());
+    }
+}
+
+void ValidateOpacity(float opacity, const char* functionName) {
+    if (!(opacity >= 0.0f && opacity <= 1.0f)) {
+        std::ostringstream os;
+        os << functionName << ": opacity must be in [0, 1]";
+        throw ValidationError(os.str());
+    }
+}
+
+} // namespace Processing
+} // namespace D3D11CoreLib

@@ -1,12 +1,6 @@
 #
 # Test/CMakeLists.txt - CTest registration
 #
-# Existing D3D11Helper tests are standalone one-file executables with their own
-# main(). The newer TEST(Suite, Case)-style tests are built into one harness
-# executable with Test/main.cpp. Do not glob every test_*.cpp into one target,
-# because that causes multiple main definitions.
-#
-
 enable_testing()
 
 set(D3D11HELPER_TEST_DEFAULT_TIMEOUT 60)
@@ -36,7 +30,6 @@ function(add_d3d11_test name source)
     )
 endfunction()
 
-# Existing standalone tests. Each file has its own main().
 add_d3d11_test(test_utilities          test_utilities.cpp)
 add_d3d11_test(test_core               test_core.cpp)
 add_d3d11_test(test_buffer             test_buffer.cpp)
@@ -50,19 +43,20 @@ add_d3d11_test(test_shared_resource    test_shared_resource.cpp)
 add_d3d11_test(test_integration        test_integration.cpp        90)
 add_d3d11_test(test_multithread        test_multithread.cpp        90)
 
-# New TEST(Suite, Case)-style tests. These do not define main() and are driven
-# by Test/main.cpp. Keep the source list explicit so standalone tests are never
-# linked into this executable by mistake.
 set(D3D11HELPER_HARNESS_TEST_SOURCES
     main.cpp
     test_FormatUtil.cpp
     test_Helpers.cpp
     test_ShaderCompiler.cpp
+    test_Processing.cpp
 )
 
 add_executable(d3d11helper_tests ${D3D11HELPER_HARNESS_TEST_SOURCES})
 target_link_libraries(d3d11helper_tests PRIVATE D3D11Helper::D3D11Helper)
 target_include_directories(d3d11helper_tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_definitions(d3d11helper_tests PRIVATE
+    D3D11HELPER_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
 
 if(MSVC)
     target_compile_options(d3d11helper_tests PRIVATE /utf-8 /W4 /permissive-)
@@ -72,10 +66,19 @@ if(COMMAND d3d11helper_copy_dxc_runtime)
     d3d11helper_copy_dxc_runtime(d3d11helper_tests)
 endif()
 
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../shaders")
+    add_custom_command(TARGET d3d11helper_tests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/../shaders"
+            "$<TARGET_FILE_DIR:d3d11helper_tests>/shaders"
+    )
+endif()
+
 set(D3D11HELPER_HARNESS_TEST_SUITES
     FormatUtil
     Helpers
     ShaderCompiler
+    Processing
 )
 
 foreach(suite IN LISTS D3D11HELPER_HARNESS_TEST_SUITES)
