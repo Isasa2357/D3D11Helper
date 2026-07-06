@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //
 // D3D11ProcessingTypes.hpp
 // Common public types for the D3D11 Processing Layer.
@@ -58,6 +58,36 @@ enum class CompositeBlendMode : UINT {
     Add = 3,
 };
 
+enum class BlurMode : UINT {
+    Box = 0,
+    Gaussian = 1,
+};
+
+enum class BlurEdgeMode : UINT {
+    Clamp = 0,
+    Constant = 1,
+};
+
+enum class RegionShape : UINT {
+    Circle = 0,
+    Rect = 1,
+};
+
+enum class RegionSelection : UINT {
+    Inside = 0,
+    Outside = 1,
+};
+
+enum class RegionEffectMode : UINT {
+    Copy = 0,
+    Darken = 1,
+    Tint = 2,
+    Grayscale = 3,
+    Highlight = 4,
+    AlphaFade = 5,
+    Vignette = 6,
+};
+
 struct ProcessingColorDesc {
     ProcessingColorMatrix srcMatrix = ProcessingColorMatrix::BT709;
     ProcessingColorRange  srcRange  = ProcessingColorRange::Full;
@@ -111,7 +141,63 @@ struct CompositeDesc {
     float opacity = 1.0f;
 };
 
+struct BlurDesc {
+    BlurMode mode = BlurMode::Gaussian;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+    UINT radius = 5;
+    float sigma = 2.0f;
+    BlurEdgeMode edgeMode = BlurEdgeMode::Clamp;
+    float borderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+};
+
+struct RegionEffectDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+
+    RegionShape shape = RegionShape::Circle;
+    RegionSelection selection = RegionSelection::Outside;
+    RegionEffectMode effect = RegionEffectMode::Darken;
+
+    // Circle parameters are in destination texture pixel coordinates.
+    float centerX = 0.0f;
+    float centerY = 0.0f;
+    float radius = 1.0f;
+
+    // Rect parameters are in destination texture pixel coordinates.
+    float rectX = 0.0f;
+    float rectY = 0.0f;
+    float rectWidth = 1.0f;
+    float rectHeight = 1.0f;
+
+    // Soft transition width in pixels. 0 gives a hard edge.
+    float edgeSoftness = 0.0f;
+
+    // Darken/Vignette: RGB is multiplied by lerp(1, darkenFactor, mask).
+    float darkenFactor = 0.5f;
+
+    // Tint: RGB is lerped toward tintColor.rgb by tintStrength * mask.
+    float tintColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float tintStrength = 0.25f;
+
+    // Grayscale: RGB is lerped toward luma by grayscaleStrength * mask.
+    float grayscaleStrength = 1.0f;
+
+    // Highlight: RGB is boosted by highlightColor.rgb * highlightStrength * mask.
+    float highlightColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float highlightStrength = 0.25f;
+
+    // AlphaFade: alpha is multiplied by lerp(1, alphaFactor, mask).
+    float alphaFactor = 0.0f;
+
+    // Vignette: mask is additionally scaled by vignetteStrength.
+    float vignetteStrength = 1.0f;
+};
+
 struct D3D11ProcessingCaps {
+
     bool rgba8Uav = false;
     bool bgra8Uav = false;
     bool rgba16FloatUav = false;
