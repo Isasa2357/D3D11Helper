@@ -1,17 +1,8 @@
-D3D11Helper Pyramid Processor cumulative patch
+D3D11Helper pyramid accelerated blur cumulative patch.
 
-Apply:
-  Extract this ZIP at the D3D11Helper repository root and overwrite existing files.
+Extract this ZIP at the D3D11Helper repository root and overwrite existing files.
 
-Added:
-  D3D11PyramidProcessor
-    - Downsample2x for RGBA-like textures
-    - Upsample2x for RGBA-like textures
-    - Point / Linear upsample
-    - Clamp / Constant edge handling
-
-Build/test:
-  build_and_test.cmd
-
-Build/test/push only on success:
+Then run:
   build_test_and_push_if_passed.cmd
+
+This adds D3D11PyramidBlur and D3D11PyramidRegionBlur. They use D3D11PyramidProcessor for downsample/upsample and D3D11Blurrer at low resolution to accelerate large blur and region blur effects.

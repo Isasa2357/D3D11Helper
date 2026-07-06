@@ -97,6 +97,7 @@ set(D3D11HELPER_HARNESS_TEST_SOURCES
     test_ProcessingMask.cpp
     test_ProcessingThreshold.cpp
     test_ProcessingPyramid.cpp
+    test_ProcessingPyramidBlur.cpp
 )
 
 add_executable(d3d11helper_tests ${D3D11HELPER_HARNESS_TEST_SOURCES})
@@ -124,6 +125,8 @@ set(D3D11HELPER_HARNESS_TEST_SUITES
     ProcessingKernelFilter
     ProcessingMask
     ProcessingThreshold
+    ProcessingPyramid
+    ProcessingPyramidBlur
 )
 
 foreach(suite IN LISTS D3D11HELPER_HARNESS_TEST_SUITES)

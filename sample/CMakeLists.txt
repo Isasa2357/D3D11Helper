@@ -113,3 +113,5 @@ d3d11helper_add_sample(D3D11Sample_14_ProcessingMask 14_ProcessingMask)
 
 d3d11helper_add_sample(D3D11Sample_15_ProcessingThreshold 15_ProcessingThreshold)
 d3d11helper_add_sample(D3D11Sample_16_ProcessingPyramid 16_ProcessingPyramid)
+
+d3d11helper_add_sample(D3D11Sample_17_ProcessingPyramidBlur 17_ProcessingPyramidBlur)

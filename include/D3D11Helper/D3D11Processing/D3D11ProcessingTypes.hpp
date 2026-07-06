@@ -471,6 +471,67 @@ struct PyramidUpsampleDesc {
     float borderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 };
 
+
+
+struct PyramidBlurDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+
+    // Number of 2x downsample steps before blurring. src/dst rect sizes must be divisible by 2^levels.
+    UINT levels = 2;
+
+    BlurMode blurMode = BlurMode::Gaussian;
+    UINT blurRadius = 5;
+    float blurSigma = 2.0f;
+    BlurEdgeMode blurEdgeMode = BlurEdgeMode::Clamp;
+    float blurBorderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    ProcessingFilter upsampleFilter = ProcessingFilter::Linear;
+    PyramidEdgeMode pyramidEdgeMode = PyramidEdgeMode::Clamp;
+    float pyramidBorderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+};
+
+struct PyramidRegionBlurDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+
+    RegionShape shape = RegionShape::Circle;
+    RegionSelection selection = RegionSelection::Outside;
+
+    // Circle parameters are in destination texture pixel coordinates.
+    float centerX = 0.0f;
+    float centerY = 0.0f;
+    float radius = 1.0f;
+
+    // Rect parameters are in destination texture pixel coordinates.
+    float rectX = 0.0f;
+    float rectY = 0.0f;
+    float rectWidth = 1.0f;
+    float rectHeight = 1.0f;
+
+    // Soft transition width in pixels. 0 gives a hard edge.
+    float edgeSoftness = 0.0f;
+
+    // Final blend amount between original and blurred image inside the selected region.
+    float blurStrength = 1.0f;
+
+    // Pyramid blur settings. src/dst rect sizes must be divisible by 2^levels.
+    UINT levels = 2;
+    BlurMode blurMode = BlurMode::Gaussian;
+    UINT blurRadius = 5;
+    float blurSigma = 2.0f;
+    BlurEdgeMode blurEdgeMode = BlurEdgeMode::Clamp;
+    float blurBorderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+    ProcessingFilter upsampleFilter = ProcessingFilter::Linear;
+    PyramidEdgeMode pyramidEdgeMode = PyramidEdgeMode::Clamp;
+    float pyramidBorderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+};
+
 struct D3D11ProcessingCaps {
 
     bool rgba8Uav = false;
