@@ -123,6 +123,14 @@ enum class MaskCombineMode : UINT {
     Subtract = 4,
 };
 
+
+enum class HeatmapMode : UINT {
+    Grayscale = 0,
+    RedGreen = 1,
+    BlueRed = 2,
+    TurboApprox = 3,
+};
+
 struct ProcessingColorDesc {
     ProcessingColorMatrix srcMatrix = ProcessingColorMatrix::BT709;
     ProcessingColorRange  srcRange  = ProcessingColorRange::Full;
@@ -362,6 +370,75 @@ struct MaskInvertDesc {
     ProcessingRect dstRect = {};
 
     MaskChannel channel = MaskChannel::Alpha;
+};
+
+
+struct ThresholdDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+
+    MaskChannel channel = MaskChannel::Luma;
+    float threshold = 0.5f;
+    bool invert = false;
+
+    float foregroundColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float backgroundColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+};
+
+struct RangeThresholdDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+
+    MaskChannel channel = MaskChannel::Luma;
+    float minValue = 0.25f;
+    float maxValue = 0.75f;
+    bool invert = false;
+
+    float foregroundColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    float backgroundColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+};
+
+struct ConfidenceHeatmapDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+
+    MaskChannel channel = MaskChannel::Red;
+    HeatmapMode mode = HeatmapMode::TurboApprox;
+    float minValue = 0.0f;
+    float maxValue = 1.0f;
+    float opacity = 1.0f;
+};
+
+struct ClassColorMapDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+
+    MaskChannel channel = MaskChannel::Red;
+
+    // HLSL reads normalized UNORM values. classScale=255 recovers 0..255 class ids from R8-style data.
+    float classScale = 255.0f;
+    UINT classCount = 16;
+    float opacity = 1.0f;
+};
+
+struct MaskOverlayDesc {
+    DXGI_FORMAT maskFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect maskRect = {};
+    ProcessingRect dstRect = {};
+
+    MaskChannel channel = MaskChannel::Alpha;
+    bool invert = false;
+    float opacity = 1.0f;
+    float overlayColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
 };
 
 struct D3D11ProcessingCaps {

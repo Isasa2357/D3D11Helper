@@ -1,30 +1,28 @@
-D3D11Helper Processing MaskProcessor cumulative patch
+D3D11Helper Threshold / Visualization patch files
+=================================================
 
-Apply:
-  Extract this ZIP at the D3D11Helper repository root and overwrite files.
+This ZIP is an overlay patch. Extract it at the D3D11Helper repository root and overwrite existing files.
 
-Added:
+Included cumulative features:
+  - D3D11Blurrer
+  - D3D11RegionEffect
+  - D3D11RegionBlur
+  - D3D11ColorAdjuster
+  - D3D11KernelFilter
   - D3D11MaskProcessor
-  - MaskApplyDesc / MaskBlendDesc / MaskCombineDesc / MaskInvertDesc
-  - MaskApplyMode / MaskCombineMode / MaskChannel
-  - MaskApplyRgba.hlsl
-  - MaskBlendRgba.hlsl
-  - MaskCombineRgba.hlsl
-  - MaskInvertRgba.hlsl
-  - sample/14_ProcessingMask
-  - Test/test_ProcessingMask.cpp
+  - D3D11ThresholdProcessor
 
-Supported operations:
-  - ApplyAlpha
-  - MultiplyRgb
-  - MultiplyRgba
-  - ReplaceAlpha
-  - BlendByMask
-  - CombineMasks: Add / Multiply / Max / Min / Subtract
-  - InvertMask
+New threshold / visualization features:
+  - Threshold
+  - RangeThreshold
+  - ConfidenceHeatmap
+  - ClassColorMap
+  - MaskOverlay
 
-Notes:
-  - This patch is cumulative over Blur, RegionEffect, RegionBlur, ColorAdjust, and KernelFilter.
-  - Mask textures are RGBA-like textures. Select Red / Green / Blue / Alpha / Luma as the mask channel.
-  - build_and_test.cmd uses parallel build and parallel ctest.
-  - build_test_and_push_if_passed.cmd pushes only when build and ctest succeed.
+Recommended command:
+  build_test_and_push_if_passed.cmd
+
+The command builds in parallel, runs ctest in parallel, and pushes only when build and tests pass.
+
+
+2026-07-06 fix: ThresholdRgba.hlsl / RangeThresholdRgba.hlsl の HLSL 予約語 pass を isPassed に変更しました。
