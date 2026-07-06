@@ -51,6 +51,7 @@ set(D3D11HELPER_HARNESS_TEST_SOURCES
     test_Processing.cpp
     test_ProcessingBlur.cpp
     test_ProcessingRegionEffect.cpp
+    test_ProcessingRegionBlur.cpp
 )
 
 add_executable(d3d11helper_tests ${D3D11HELPER_HARNESS_TEST_SOURCES})
@@ -82,6 +83,8 @@ set(D3D11HELPER_HARNESS_TEST_SUITES
     ShaderCompiler
     Processing
     ProcessingBlur
+    ProcessingRegionEffect
+    ProcessingRegionBlur
 )
 
 foreach(suite IN LISTS D3D11HELPER_HARNESS_TEST_SUITES)

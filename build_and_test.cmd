@@ -14,3 +14,7 @@ cmake --build out/build/default --config Debug --parallel
 if errorlevel 1 exit /b 1
 
 ctest --test-dir out/build/default -C Debug --output-on-failure -j %NUMBER_OF_PROCESSORS%
+
+if errorlevel 1 exit /b 1
+
+exit /b 0
