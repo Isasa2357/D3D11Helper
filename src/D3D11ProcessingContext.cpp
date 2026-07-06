@@ -1,5 +1,5 @@
 ﻿#include <D3D11Helper/D3D11Processing/D3D11ProcessingContext.hpp>
-#include <D3D11Helper/D3D11Core/ThrowIfFailed.hpp>
+#include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
 
 #include <cstring>
 #include <stdexcept>

@@ -1,8 +1,8 @@
 ﻿//
 // D3D11Helpers.cpp
 //
-#include <D3D11Helper/D3D11Framework/D3D11Helpers.hpp>
-#include <D3D11Helper/D3D11Core/ThrowIfFailed.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11Helpers.hpp>
+#include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
 
 #include <algorithm>
 #include <cstring>

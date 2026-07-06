@@ -1,6 +1,6 @@
 ﻿#include <D3D11Helper/D3D11Processing/D3D11FusedPipeline.hpp>
-#include <D3D11Helper/D3D11Core/ThrowIfFailed.hpp>
-#include <D3D11Helper/D3D11Framework/D3D11Helpers.hpp>
+#include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11Helpers.hpp>
 
 #include <algorithm>
 #include <sstream>

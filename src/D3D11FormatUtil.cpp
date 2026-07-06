@@ -1,7 +1,7 @@
 ﻿//
 // D3D11FormatUtil.cpp
 //
-#include <D3D11Helper/D3D11Core/D3D11FormatUtil.hpp>
+#include <D3D11Helper/D3D11Foundation/D3D11FormatUtil.hpp>
 
 namespace D3D11CoreLib {
 namespace FormatUtil {
