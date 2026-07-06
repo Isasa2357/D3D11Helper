@@ -2,12 +2,12 @@
 
 **Direct3D 11** の定型処理を薄くラップした **C++17 ヘルパライブラリ**です。
 
-v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper を追加しています。
+v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper、v1.4.0 で compute-stage resource binding helper を追加しています。
 
 ```text
 D3D11Foundation   DirectX / DXGI only の基礎 utility
 D3D11Core         Device / Immediate Context / Deferred Context / DXGI facade
-D3D11Gpu          Resource / View / Sampler / Shader / Pipeline / Transfer
+D3D11Gpu          Resource / View / Sampler / Shader / Pipeline / Transfer / Binding
 D3D11Presentation RenderTarget / SwapChain / BackBuffer / Resize / Present
 D3D11Processing   GPU 画像処理
 D3D11Interop      SharedResource / D3D11.4 Fence / D3D11-D3D12 interop
@@ -24,7 +24,7 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject report
 
 - **DirectX / DXGI 中心** — PNG / JPEG / 動画エンコードなどの file/media I/O は本体に含めず、上位ライブラリへ分離する方針。
 - **D3D11Core** — device / immediate context / deferred context / DXGI を束ねる facade。
-- **D3D11Gpu** — buffer / texture / view / sampler / shader compiler / compute pipeline / graphics pipeline / staging / CPU transfer を提供。
+- **D3D11Gpu** — buffer / texture / view / sampler / shader compiler / compute pipeline / graphics pipeline / staging / CPU transfer / compute binding を提供。
 - **D3D11Presentation** — offscreen render target、window swapchain、backbuffer RTV、optional depth/stencil、viewport、clear、present、resize を提供。
 - **D3D11Processing** — GPU 上で format conversion、resize、remap、composite、blur、region effect、mask、threshold、pyramid、fused pipeline などを実行。
 - **D3D11Interop** — D3D11/D3D12 共有リソースと D3D11.4 Fence 同期。
@@ -114,6 +114,29 @@ swapChain.Present(1, 0);
 
 ---
 
+## Compute binding
+
+v1.4.0 以降では、compute stage の SRV / UAV / constant buffer / sampler binding を `D3D11ComputeBindingSet` でまとめて扱えます。
+
+```cpp
+D3D11ComputeBindingSet bindings;
+bindings.SetShaderResource(0, srv.Get());
+bindings.SetUnorderedAccess(0, uav.Get());
+bindings.SetConstantBuffer(0, constantBuffer.Get());
+bindings.SetSampler(0, sampler.Get());
+
+{
+    D3D11ScopedComputeBindings scoped(core->GetImmediateContext(), bindings);
+    // dispatch or helper processing...
+}
+
+D3D11UnbindComputeResources(core->GetImmediateContext());
+```
+
+`D3D11ComputeBindingSet` は非所有の raw pointer を保持します。binding される view / buffer / sampler の lifetime は呼び出し側が管理してください。`D3D11ScopedComputeBindings` は、対象範囲の previous state だけを `ComPtr` で保持して復元します。
+
+---
+
 ## サンプル
 
 代表的なサンプル:
@@ -122,6 +145,7 @@ swapChain.Present(1, 0);
 sample/03_HelloTriangle         low-level swapchain helper example
 sample/18_TextureTransfer       Texture2D <-> D3D11CpuImage transfer
 sample/19_PresentationWindow    D3D11SwapChain window render-loop sample
+sample/20_ComputeBindingSet     Compute-stage binding helper sample
 ```
 
 ---
@@ -153,6 +177,7 @@ build_and_test.cmd
 - [`doc/Architecture.md`](doc/Architecture.md)
 - [`doc/D3D11Gpu.md`](doc/D3D11Gpu.md)
 - [`doc/D3D11TextureTransfer.md`](doc/D3D11TextureTransfer.md)
+- [`doc/D3D11BindingSet.md`](doc/D3D11BindingSet.md)
 - [`doc/D3D11Presentation.md`](doc/D3D11Presentation.md)
 - [`doc/Patterns.md`](doc/Patterns.md)
 - [`CHANGELOG.md`](CHANGELOG.md)
@@ -168,6 +193,8 @@ PNG / JPEG / BMP / DDS load/save
 MP4 / H.264 / HEVC encode/decode
 Media Foundation / NVENC / FFmpeg / OpenCV integration
 Application renderer / scene graph / UI framework
+D3D12-style descriptor heap abstraction
+Shader reflection driven auto-binding system
 ```
 
 これらは D3D11Helper の上位ライブラリで実装する方針です。
