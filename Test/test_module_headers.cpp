@@ -36,6 +36,8 @@ int main() {
                   "D3D11Fence must remain move-constructible.");
     static_assert(!std::is_copy_constructible<D3D11Fence>::value,
                   "D3D11Fence must remain move-only.");
+    static_assert(!std::is_copy_constructible<D3D11ScopedComputeBindings>::value,
+                  "D3D11ScopedComputeBindings must remain non-copyable.");
 
     D3D11CoreConfig config = {};
     (void)config;
@@ -44,12 +46,14 @@ int main() {
     D3D11StagingBuffer staging;
     D3D11ComputePipeline computePipeline;
     D3D11GraphicsPipeline graphicsPipeline;
+    D3D11ComputeBindingSet computeBindings;
     D3D11Fence fence;
     Processing::ProcessingRect rect = {};
     (void)resource;
     (void)staging;
     (void)computePipeline;
     (void)graphicsPipeline;
+    (void)computeBindings;
     (void)fence;
     (void)rect;
 

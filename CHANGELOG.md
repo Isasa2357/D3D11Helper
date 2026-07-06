@@ -8,6 +8,93 @@ This project uses semantic versioning in the following style:
 - `v1.x.y`: bug fixes, tests, and documentation-only updates
 - `v2.0.0`: breaking public API changes, if they ever become necessary
 
+---
+
+## v1.4.0 - Compute binding helpers
+
+### Summary
+
+`v1.4.0` adds compute-stage binding helpers to `D3D11Gpu`.
+
+The goal is to make repeated compute dispatch setup safer and less verbose while staying natural to Direct3D 11. This version does **not** introduce a D3D12-style descriptor heap, shader reflection system, renderer framework, or automatic resource lifetime owner.
+
+### Added
+
+- Added compute-stage binding set:
+  - `D3D11ComputeBindingSet`
+  - `SetShaderResource`
+  - `SetUnorderedAccess`
+  - `SetConstantBuffer`
+  - `SetSampler`
+  - `Bind`
+  - `Unbind`
+  - `Clear`
+  - `Empty`
+- Added scoped save/restore helper:
+  - `D3D11ScopedComputeBindings`
+- Added compute-stage helper functions:
+  - `BindComputeShaderResources`
+  - `BindComputeUnorderedAccessViews`
+  - `BindComputeConstantBuffers`
+  - `BindComputeSamplers`
+  - `UnbindComputeShaderResources`
+  - `UnbindComputeUnorderedAccessViews`
+  - `UnbindComputeConstantBuffers`
+  - `UnbindComputeSamplers`
+  - `D3D11UnbindComputeResources`
+- Added `Test/test_binding_set.cpp` with runtime coverage for:
+  - empty/clear behavior
+  - slot validation
+  - range validation
+  - zero-count no-op behavior
+  - contiguous-range holes
+  - null-entry bind/unbind
+  - global compute-stage unbind
+  - scoped restore for SRV/UAV/constant buffer/sampler
+  - idempotent `Restore()`
+  - move construction and move assignment behavior
+- Added `sample/20_ComputeBindingSet`, a file-I/O-free console sample.
+- Added `doc/D3D11BindingSet.md`.
+- Added `doc/ReleaseNotes_v1.4.0.md` and `doc/MigrationGuide_v1.4.0.md`.
+
+### Changed
+
+- `D3D11Gpu.hpp` now includes `D3D11BindingSet.hpp`.
+- `CMakeLists.txt` project version updated to `1.4.0`.
+- `doc/D3D11Gpu.md`, `README.md`, and `doc/README.md` now document compute binding helpers.
+
+### Supported scope
+
+`v1.4.0` intentionally targets compute-stage binding only:
+
+- CS SRV
+- CS UAV
+- CS constant buffer
+- CS sampler
+- scoped previous-state restore for affected compute slots
+- full compute-stage unbind helper
+
+### Notes on lifetime
+
+`D3D11ComputeBindingSet` stores non-owning raw pointers. It does not keep bound resources alive. Users must keep SRV/UAV/buffer/sampler objects alive until after binding is complete.
+
+`D3D11ScopedComputeBindings` owns only the previous state it captures through `ComPtr`, so that it can restore that previous state on destruction or explicit `Restore()`.
+
+### Notes on UAV counters
+
+D3D11 exposes UAV view bindings through `CSGetUnorderedAccessViews`, but it does not expose the current append/consume UAV counter values. Therefore `D3D11ScopedComputeBindings::Restore()` restores UAV view bindings and preserves counters by passing `nullptr` for initial counts.
+
+### Non-goals
+
+`v1.4.0` does not add:
+
+- graphics-stage binding sets
+- descriptor heap abstraction
+- automatic shader reflection binding
+- material system
+- render graph
+- resource lifetime tracking
+- file/media I/O
 
 ---
 
