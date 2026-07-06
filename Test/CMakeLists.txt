@@ -81,6 +81,7 @@ add_d3d11_test(test_shader_compiler    test_shader_compiler.cpp)
 add_d3d11_test(test_compute            test_compute.cpp)
 add_d3d11_test(test_graphics           test_graphics.cpp)
 add_d3d11_test(test_shared_resource    test_shared_resource.cpp)
+add_d3d11_test(test_texture_transfer   test_texture_transfer.cpp 90)
 add_d3d11_test(test_integration        test_integration.cpp        90)
 add_d3d11_test(test_multithread        test_multithread.cpp        90)
 

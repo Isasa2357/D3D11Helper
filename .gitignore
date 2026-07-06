@@ -81,6 +81,13 @@
 *.bmp
 *.dds
 
+# Temporary patch/apply scripts
+/build_test_and_push_if_passed.cmd
+/git_commit_push.cmd
+/apply_*.cmd
+/README_APPLY.txt
+/tools/
+
 # OS/editor noise
 .DS_Store
 Thumbs.db
