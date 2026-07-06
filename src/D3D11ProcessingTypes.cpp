@@ -1,5 +1,5 @@
-﻿#include "D3D11Processing/D3D11ProcessingTypes.hpp"
-#include "D3D11Core/D3D11FormatUtil.hpp"
+﻿#include <D3D11Helper/D3D11Processing/D3D11ProcessingTypes.hpp>
+#include <D3D11Helper/D3D11Core/D3D11FormatUtil.hpp>
 
 #include <sstream>
 

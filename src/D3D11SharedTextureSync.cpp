@@ -5,7 +5,7 @@
 // Kept as a small translation unit so the large existing D3D11Helpers.cpp does not need
 // to be overwritten by Explorer-copy based updates.
 //
-#include "D3D11Helpers.hpp"
+#include <D3D11Helper/D3D11Framework/D3D11Helpers.hpp>
 
 #include <stdexcept>
 

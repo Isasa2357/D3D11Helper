@@ -3,8 +3,8 @@
 // D3D11ProcessingShaderCache.hpp
 // Runtime shader compiler/cache for D3D11 Processing HLSL files.
 //
-#include "D3D11ProcessingContext.hpp"
-#include "../D3D11Framework/D3D11ShaderCompiler.hpp"
+#include <D3D11Helper/D3D11Processing/D3D11ProcessingContext.hpp>
+#include <D3D11Helper/D3D11Framework/D3D11ShaderCompiler.hpp>
 
 #include <string>
 #include <unordered_map>

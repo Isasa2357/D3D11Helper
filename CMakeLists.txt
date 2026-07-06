@@ -91,14 +91,7 @@ add_library(D3D11Helper::D3D11Helper ALIAS D3D11Helper)
 
 target_include_directories(D3D11Helper
     PUBLIC
-        # Existing samples/tests use: #include "D3D11Core/D3D11Core.hpp"
-        "${D3D11HELPER_INCLUDE_DIR}"
-        # Also allow consumers to use: #include <D3D11Helper/D3D11Core/D3D11Core.hpp>
         "${D3D11HELPER_ROOT_INCLUDE_DIR}"
-    PRIVATE
-        "${D3D11HELPER_CORE_INCLUDE_DIR}"
-        "${D3D11HELPER_FRAMEWORK_INCLUDE_DIR}"
-        "${D3D11HELPER_PROCESSING_INCLUDE_DIR}"
 )
 
 target_compile_definitions(D3D11Helper

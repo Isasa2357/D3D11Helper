@@ -3,7 +3,7 @@
 // D3D11ProcessingTypes.hpp
 // Common public types for the D3D11 Processing Layer.
 //
-#include "../D3D11Core/D3D11Common.hpp"
+#include <D3D11Helper/D3D11Core/D3D11Common.hpp>
 
 #include <stdexcept>
 #include <string>

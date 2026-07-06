@@ -3,8 +3,8 @@
 // D3D11ProcessingContext.hpp
 // Device-owned shared state for D3D11 Processing dispatches.
 //
-#include "D3D11ProcessingTypes.hpp"
-#include "../D3D11Core/D3D11Core.hpp"
+#include <D3D11Helper/D3D11Processing/D3D11ProcessingTypes.hpp>
+#include <D3D11Helper/D3D11Core/D3D11Core.hpp>
 
 #include <filesystem>
 

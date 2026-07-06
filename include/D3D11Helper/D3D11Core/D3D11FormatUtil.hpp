@@ -2,7 +2,7 @@
 //
 // D3D11FormatUtil.hpp - DXGI_FORMAT 判定ヘルパ
 //
-#include "D3D11Common.hpp"
+#include <D3D11Helper/D3D11Core/D3D11Common.hpp>
 
 namespace D3D11CoreLib {
 namespace FormatUtil {

@@ -14,7 +14,7 @@
 //
 // 戻り値の ShaderBytecode は所有権を持つ。
 //
-#include "../D3D11Core/D3D11Common.hpp"
+#include <D3D11Helper/D3D11Core/D3D11Common.hpp>
 
 #include <filesystem>
 #include <string>

@@ -1,8 +1,8 @@
 ﻿//
 // D3D11ShaderCompiler.cpp
 //
-#include "D3D11ShaderCompiler.hpp"
-#include "../D3D11Core/ThrowIfFailed.hpp"
+#include <D3D11Helper/D3D11Framework/D3D11ShaderCompiler.hpp>
+#include <D3D11Helper/D3D11Core/ThrowIfFailed.hpp>
 
 #include <d3dcompiler.h>
 #include <dxcapi.h>

@@ -3,9 +3,9 @@
 // D3D11TextureViews.hpp
 // Processing-specific SRV/UAV view sets built on D3D11 view objects.
 //
-#include "D3D11ProcessingContext.hpp"
-#include "../D3D11Framework/D3D11Helpers.hpp"
-#include "../D3D11Framework/D3D11Resource.hpp"
+#include <D3D11Helper/D3D11Processing/D3D11ProcessingContext.hpp>
+#include <D3D11Helper/D3D11Framework/D3D11Helpers.hpp>
+#include <D3D11Helper/D3D11Framework/D3D11Resource.hpp>
 
 namespace D3D11CoreLib {
 namespace Processing {

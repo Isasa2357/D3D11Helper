@@ -9,9 +9,9 @@
 //   D3D11 では UpdateSubresource / 初期データ付き生成で済むため大幅に簡潔。
 //   UploadBuffer / UploadRing / RecordUpload 系は不要。
 //
-#include "../D3D11Core/D3D11Core.hpp"
-#include "../D3D11Core/D3D11FormatUtil.hpp"
-#include "D3D11Resource.hpp"
+#include <D3D11Helper/D3D11Core/D3D11Core.hpp>
+#include <D3D11Helper/D3D11Core/D3D11FormatUtil.hpp>
+#include <D3D11Helper/D3D11Framework/D3D11Resource.hpp>
 
 #include <cstdint>
 #include <vector>
