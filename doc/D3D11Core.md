@@ -1,40 +1,32 @@
-﻿# D3D11Core リファレンス（Layer 1）
+﻿# D3D11Core
 
-`D3D11Core/` に含まれる全クラス・関数の API リファレンスです。
+`D3D11Core` は、D3D11 の device / immediate context / deferred context / DXGI を束ねる実行基盤です。
 
----
+## Include
 
-## D3D11Common
+```cpp
+#include <D3D11Helper/D3D11Core/D3D11Core.hpp>
+```
 
-Layer 1 の共通 include。`<d3d11_4.h>` / `<dxgi1_6.h>` を取り込み、`ComPtr<T>` エイリアスを定義する。`#pragma comment(lib, ...)` で必要な `.lib` を自動リンクする。
+## 主な型
 
----
-
-## D3D11CoreConfig
-
-初期化設定 struct。
+### D3D11CoreConfig
 
 ```cpp
 struct D3D11CoreConfig {
-    bool enableDebugLayer;                // Debug Layer を有効化（既定 true）
-    bool enableInfoQueue;                 // InfoQueue の break 設定（既定 true）
-    bool preferHighPerformanceAdapter;    // 高性能 GPU を優先（既定 true）
-    bool allowWarpAdapter;                // HW が無ければ WARP 使用（既定 false）
-    D3D_FEATURE_LEVEL minimumFeatureLevel;// 最低 Feature Level（既定 11_0）
-    bool enableMultithreadProtection;     // ID3D11Multithread の保護を有効化（既定 false）
-    bool breakOnError;                    // InfoQueue: エラーでブレーク（既定 false）
-    bool breakOnCorruption;               // InfoQueue: 破損でブレーク（既定 false）
-    bool breakOnWarning;                  // InfoQueue: 警告でブレーク（既定 false）
+    bool enableDebugLayer;
+    bool enableInfoQueue;
+    bool preferHighPerformanceAdapter;
+    bool allowWarpAdapter;
+    D3D_FEATURE_LEVEL minimumFeatureLevel;
+    bool enableMultithreadProtection;
+    bool breakOnError;
+    bool breakOnCorruption;
+    bool breakOnWarning;
 };
 ```
 
-`enableMultithreadProtection` は複数スレッドから Immediate Context やリソース操作を行う場合の安全性を高めるための設定です。性能面では内部ロックの競合が発生しうるため、並列記録が必要な場合は Deferred Context も検討します。
-
----
-
-## D3D11Core
-
-Layer 1 のファサード。Device / Context / DXGI を束ねる。
+### D3D11Core
 
 ```cpp
 void Initialize(const D3D11CoreConfig& config = {});
@@ -43,112 +35,45 @@ static std::shared_ptr<D3D11Core> CreateShared(const D3D11CoreConfig& config = {
 static std::shared_ptr<D3D11Core> CreateSharedWithAdapterLuid(LUID, const D3D11CoreConfig& = {});
 ```
 
-**よく使うショートカット:**
+よく使うショートカット:
 
-- `GetDevice()` / `GetDevice5()` — `ID3D11Device` / `ID3D11Device5`
-- `GetImmediateContext()` / `GetImmediateContext4()` — 即時コンテキスト
-- `GetFactory()` — `IDXGIFactory6`
-- `GetAdapterLuid()` / `IsSameAdapter(LUID)` — アダプタ比較
-- `GetFeatureLevel()` — 確定した Feature Level
-- `IsMultithreadProtected()` — D3D11 multithread protection が有効かどうか
-- `CreateDeferredContext()` — ワーカースレッド用 Deferred Context を作成
-- `ExecuteCommandList(commandList, restoreContextState)` — Deferred Context で記録した command list を実行
-- `Flush()` — GPU 完了待ち（Query EVENT ベース）
+- `GetDevice()` / `GetDevice5()`
+- `GetImmediateContext()` / `GetImmediateContext4()`
+- `GetFactory()`
+- `GetAdapterLuid()`
+- `IsSameAdapter(LUID)`
+- `GetFeatureLevel()`
+- `IsMultithreadProtected()`
+- `CreateDeferredContext()`
+- `ExecuteCommandList(commandList, restoreContextState)`
+- `Flush()`
 
----
+### D3D11DeviceContext
 
-## D3D11DeviceContext
+Factory / Adapter / Device / ImmediateContext を保持します。D3D11.4 の `ID3D11Device5` / `ID3D11DeviceContext4` が取得できる場合は保持します。
 
-Factory / Adapter / Device / ImmediateContext を保持する。D3D11.4 の `ID3D11Device5` / `ID3D11DeviceContext4` も取得可能な場合は保持する。
+### D3D11DeferredContext
 
-- `SupportsResourceSharing()` — `ID3D11Device5` が取得できたかどうか
-- `IsMultithreadProtected()` — `ID3D11Multithread` 保護が有効かどうか
-
----
-
-## D3D11DeferredContext
-
-ワーカースレッドで D3D11 command list を記録するための薄い wrapper。
+ワーカースレッドで D3D11 command list を記録するための薄い wrapper です。
 
 ```cpp
 ID3D11DeviceContext* Get() const;
 ComPtr<ID3D11CommandList> FinishCommandList(bool restoreDeferredContextState = false);
 ```
 
-D3D12 の command list とは異なり、D3D11 の Deferred Context はランタイムが管理する記録用 context です。実行は `D3D11Core::ExecuteCommandList()` で Immediate Context に渡して行います。
+## v1.1.0 で Core から分離したもの
 
----
+次の機能は Core から別モジュールへ整理されました。
 
-## D3D11Fence
+| 旧位置 | 新位置 |
+|---|---|
+| `D3D11Common.hpp` | `D3D11Foundation/D3D11Common.hpp` |
+| `ThrowIfFailed.hpp` | `D3D11Foundation/ThrowIfFailed.hpp` |
+| `DxgiUtil.hpp` | `D3D11Foundation/DxgiUtil.hpp` |
+| `DxgiAdapterSelector.hpp` | `D3D11Foundation/DxgiAdapterSelector.hpp` |
+| `D3D11FormatUtil.hpp` | `D3D11Foundation/D3D11FormatUtil.hpp` |
+| `D3D11Debug.hpp` | `D3D11Diagnostics/D3D11Debug.hpp` |
+| `D3D11Fence.hpp` | `D3D11Interop/D3D11Fence.hpp` |
+| `D3D11SharedResource.hpp` | `D3D11Interop/D3D11SharedResource.hpp` |
 
-`ID3D11Fence` ラッパ（D3D11.4 / D3D12 相互運用向け）。HANDLE を所有するため move-only。
-
-```cpp
-void Initialize(ID3D11Device5* device5, D3D11_FENCE_FLAG flags = D3D11_FENCE_FLAG_SHARED);
-void OpenSharedHandle(ID3D11Device5* device5, HANDLE sharedHandle);
-void Signal(ID3D11DeviceContext4* ctx, UINT64 value);
-void GpuWait(ID3D11DeviceContext4* ctx, UINT64 value);
-void CpuWait(UINT64 value);
-HANDLE CreateSharedHandle() const;
-UINT64 GetCompletedValue() const;
-```
-
----
-
-## D3D11Debug
-
-- `SetupInfoQueue(device, breakOnError, breakOnCorruption, breakOnWarning)` — InfoQueue の break 設定
-- `ReportLiveObjects(device)` — ライブオブジェクトをデバッガに出力
-- `SetDebugName(object, name)` — デバッグ名を付けるテンプレート
-
----
-
-## D3D11FormatUtil
-
-`DXGI_FORMAT` に対する軽量 trait 群です。D3D11 / D3D12 の両方で同じ `DXGI_FORMAT` を扱うため、D3D12Helper とほぼ同じ判定関数を提供します。
-
-```cpp
-bool IsDepthFormat(DXGI_FORMAT format);
-bool IsTypelessFormat(DXGI_FORMAT format);
-bool IsBlockCompressedFormat(DXGI_FORMAT format);
-
-bool IsYuvFormat(DXGI_FORMAT format);
-bool IsPlanarFormat(DXGI_FORMAT format);
-bool RequiresEvenSize(DXGI_FORMAT format);
-UINT GetKnownPlaneCount(DXGI_FORMAT format);
-
-UINT BitsPerPixel(DXGI_FORMAT format);
-UINT BytesPerPixel(DXGI_FORMAT format);
-```
-
-### 注意点
-
-- `IsYuvFormat()` は packed / planar の両方を含む video 系 format 判定です。
-- `IsPlanarFormat()` は `NV12` / `P010` / `P016` など複数 plane を持つ format を判定します。
-- `RequiresEvenSize()` は 4:2:0 系の代表的 format で width / height の偶数制約があるかを返します。
-- `GetKnownPlaneCount()` は D3D11 では format trait です。D3D12 の `PlaneSlice` 付き subresource index と同一視しないでください。
-- `BytesPerPixel()` はブロック圧縮 format では 0 を返します。BC format はブロック単位で扱います。
-
----
-
-## D3D11SharedResource
-
-- `CreateSharedHandle(resource, name)` — NT 共有ハンドルを作成
-- `OpenSharedHandle(device, handle)` — `ID3D11Resource` として開く
-- `OpenSharedTexture2D(device, handle)` — Texture2D として開く
-
----
-
-## DxgiAdapterSelector
-
-- `CreateFactory(enableDebug)` — `IDXGIFactory6` を生成
-- `SelectHardwareAdapter(factory, preferHighPerf, allowWarp)` — HW アダプタ選択
-- `SelectAdapterByLuid(factory, luid)` — LUID 指定
-
----
-
-## DxgiUtil / ThrowIfFailed
-
-- `LuidEquals(a, b)` / `LuidToWString(luid)` — LUID 比較・文字列化
-- `D3D11CORE_THROW_IF_FAILED(hr)` — 式・ファイル・行を含む例外
-- `D3D11CORE_THROW_IF_FAILED_MSG(hr, msg)` — メッセージ付き
+旧 include path は v1.x 互換 wrapper として残します。

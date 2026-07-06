@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
-    VERSION 0.1.0
+    VERSION 1.1.0
     LANGUAGES CXX
 )
 
@@ -67,6 +67,19 @@ set(D3D11HELPER_SOURCES
     src/D3D11PyramidRegionBlur.cpp
     src/D3D11FusedPipeline.cpp
 )
+
+# v1.1.0 module layout:
+#   D3D11Foundation  : DirectX/DXGI-only utilities
+#   D3D11Core        : device / context facade
+#   D3D11Gpu         : resource / view / transfer / pipeline helpers
+#   D3D11Presentation: swapchain / backbuffer helpers
+#   D3D11Processing  : GPU image processing
+#   D3D11Interop     : shared handles / D3D11-D3D12 interop
+#   D3D11Diagnostics : debug layer / InfoQueue / live object helpers
+#
+# D3D11Framework and several D3D11Core headers remain in this list as
+# compatibility wrappers for v1.x users.  New code should prefer the module
+# headers above.
 
 set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Foundation/D3D11Common.hpp
