@@ -1,14 +1,14 @@
-﻿# D3D11Helper
+# D3D11Helper
 
 **Direct3D 11** の定型処理を薄くラップした **C++17 ヘルパライブラリ**です。
 
-v1.1.0 では、従来の `D3D11Core / D3D11Framework / D3D11Processing` という 3 レイヤ構成を、今後の D3D12Helper との機能対応を見据えて、次のモジュール構成へ整理しています。
+v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper を追加しています。
 
 ```text
 D3D11Foundation   DirectX / DXGI only の基礎 utility
 D3D11Core         Device / Immediate Context / Deferred Context / DXGI facade
 D3D11Gpu          Resource / View / Sampler / Shader / Pipeline / Transfer
-D3D11Presentation SwapChain / BackBuffer / Present 系
+D3D11Presentation RenderTarget / SwapChain / BackBuffer / Resize / Present
 D3D11Processing   GPU 画像処理
 D3D11Interop      SharedResource / D3D11.4 Fence / D3D11-D3D12 interop
 D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject report
@@ -22,10 +22,10 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject report
 
 ## 特徴
 
-- **DirectX / DXGI 中心** — PNG / JPEG / 動画エンコードなどのファイル I/O は本体に含めず、上位ライブラリへ分離する方針。
+- **DirectX / DXGI 中心** — PNG / JPEG / 動画エンコードなどの file/media I/O は本体に含めず、上位ライブラリへ分離する方針。
 - **D3D11Core** — device / immediate context / deferred context / DXGI を束ねる facade。
-- **D3D11Gpu** — buffer / texture / view / sampler / shader compiler / compute pipeline / graphics pipeline / staging readback を提供。
-- **D3D11Presentation** — swapchain 作成と backbuffer 取得の入口。Present ループや RTV 運用クラスは後続バージョンで拡張予定。
+- **D3D11Gpu** — buffer / texture / view / sampler / shader compiler / compute pipeline / graphics pipeline / staging / CPU transfer を提供。
+- **D3D11Presentation** — offscreen render target、window swapchain、backbuffer RTV、optional depth/stencil、viewport、clear、present、resize を提供。
 - **D3D11Processing** — GPU 上で format conversion、resize、remap、composite、blur、region effect、mask、threshold、pyramid、fused pipeline などを実行。
 - **D3D11Interop** — D3D11/D3D12 共有リソースと D3D11.4 Fence 同期。
 - **D3D11Diagnostics** — Debug Layer / InfoQueue / LiveObject report / DebugName。
@@ -33,231 +33,141 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject report
 
 ---
 
-## アーキテクチャ
-
-```text
-+--------------------------------------------------------------+
-|  Application / Higher-level libraries                        |
-|  Window / Camera / Renderer / Processing / Interop / Encoder |
-+--------------------------------------------------------------+
-        |                 |                 |
-        v                 v                 v
-+----------------+ +----------------+ +----------------------+
-| Presentation   | | Processing     | | Interop / Diagnostics |
-| SwapChain      | | GPU image proc | | Shared / Debug        |
-+----------------+ +----------------+ +----------------------+
-        |                 |                 |
-        +-----------------+-----------------+
-                          |
-                          v
-+--------------------------------------------------------------+
-|  D3D11Gpu                                                    |
-|    Resource / View / Sampler / Shader / Pipeline / Transfer  |
-+--------------------------------------------------------------+
-                          |
-                          v
-+--------------------------------------------------------------+
-|  D3D11Core                                                   |
-|    Device / Immediate Context / Deferred Context / DXGI      |
-+--------------------------------------------------------------+
-                          |
-                          v
-+--------------------------------------------------------------+
-|  D3D11Foundation                                             |
-|    Common / ThrowIfFailed / FormatUtil / DxgiUtil            |
-+--------------------------------------------------------------+
-```
-
-詳細は [`doc/Architecture.md`](doc/Architecture.md) を参照してください。
-
----
-
-## ディレクトリ構成
-
-```text
-D3D11Helper/
-├── CMakeLists.txt
-├── cmake/
-├── include/D3D11Helper/
-│   ├── D3D11Foundation/     # Common / HRESULT / DXGI utility / format trait
-│   ├── D3D11Core/           # Device / Context facade + compatibility wrappers
-│   ├── D3D11Gpu/            # Resource / View / Pipeline / Shader / Staging
-│   ├── D3D11Framework/      # v1.x compatibility wrappers for old Layer 2 path
-│   ├── D3D11Presentation/   # SwapChain / BackBuffer helpers
-│   ├── D3D11Processing/     # GPU image processing
-│   ├── D3D11Interop/        # SharedResource / Fence interop
-│   └── D3D11Diagnostics/    # Debug Layer / InfoQueue / LiveObject
-├── shaders/D3D11Processing/
-├── src/
-├── sample/
-├── Test/
-└── doc/
-```
-
-`D3D11Framework/` は互換パスです。新規コードでは `D3D11Gpu/` と `D3D11Presentation/` を使ってください。
-
----
-
-## クイックスタート
+## 基本 include
 
 ```cpp
 #include <D3D11Helper/D3D11Core/D3D11Core.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11Gpu.hpp>
-
-using namespace D3D11CoreLib;
-
-int main() {
-    auto core = D3D11Core::CreateShared();
-
-    auto tex = CreateTexture2D(*core, 256, 256, DXGI_FORMAT_R8G8B8A8_UNORM,
-                               D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET);
-    auto srv = CreateTexture2DSrv(*core, tex);
-    auto rtv = CreateTexture2DRtv(*core, tex);
-
-    auto sampler = CreateSampler(*core, MakeLinearClampSamplerDesc());
-
-    core->Flush();
-}
-```
-
-旧 include も v1.x では維持されます。
-
-```cpp
-#include <D3D11Helper/D3D11Framework/D3D11Framework.hpp> // compatibility wrapper
-```
-
-Processing Layer の最小形:
-
-```cpp
-#include <D3D11Helper/D3D11Core/D3D11Core.hpp>
-#include <D3D11Helper/D3D11Gpu/D3D11Gpu.hpp>
+#include <D3D11Helper/D3D11Presentation/D3D11Presentation.hpp>
 #include <D3D11Helper/D3D11Processing/D3D11Processing.hpp>
+```
+
+---
+
+## 最小例: Core 作成
+
+```cpp
+#include <D3D11Helper/D3D11Core/D3D11Core.hpp>
 
 using namespace D3D11CoreLib;
-using namespace D3D11CoreLib::Processing;
 
 int main() {
-    D3D11CoreConfig cfg;
-    cfg.allowWarpAdapter = true;
-    auto core = D3D11Core::CreateShared(cfg);
+    D3D11CoreConfig config;
+    config.enableDebugLayer = true;
+    config.enableInfoQueue = true;
 
-    D3D11ProcessingContext processing;
-    processing.Initialize(*core, "shaders/D3D11Processing");
-
-    D3D11Resizer resizer;
-    resizer.Initialize(processing);
-
-    auto src = CreateTexture2D(*core, 640, 480, DXGI_FORMAT_R8G8B8A8_UNORM,
-        D3D11_BIND_SHADER_RESOURCE);
-    auto dst = resizer.CreateOutputTexture(*core, 320, 240, DXGI_FORMAT_R8G8B8A8_UNORM);
-
-    ResizeDesc desc;
-    desc.filter = ProcessingFilter::Linear;
-    resizer.DispatchResize(core->GetImmediateContext(), src, dst, desc);
-
+    auto core = D3D11Core::CreateShared(config);
     core->Flush();
+    return 0;
 }
+```
+
+---
+
+## Texture transfer
+
+v1.2.0 以降では、D3D11 texture と CPU memory の橋渡しとして `D3D11CpuImage` と `D3D11TextureTransfer` を使えます。
+
+```cpp
+D3D11CpuImage image = CreateCpuImage(640, 480, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+auto texture = CreateTexture2DFromCpuImage(*core, image);
+auto readback = ReadbackTexture2DToCpuImage(*core, texture);
+```
+
+D3D11Helper 本体は PNG / JPEG / MP4 / NVENC / Media Foundation などの file/media I/O を持ちません。上位ライブラリは `D3D11CpuImage` を境界として実装します。
+
+---
+
+## Presentation
+
+v1.3.0 以降では、offscreen render target と window swapchain を `D3D11Presentation` で扱えます。
+
+```cpp
+D3D11RenderTargetDesc rtDesc = {};
+rtDesc.width = 1280;
+rtDesc.height = 720;
+rtDesc.colorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+rtDesc.depthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+auto target = CreateRenderTarget(*core, rtDesc);
+target.Clear(core->GetImmediateContext());
+target.BindAndSetViewport(core->GetImmediateContext());
+```
+
+window 表示では `D3D11SwapChain` が backbuffer RTV / optional DSV / resize / present を管理します。
+
+```cpp
+D3D11SwapChainDesc scDesc = {};
+scDesc.hwnd = hwnd;
+scDesc.width = 1280;
+scDesc.height = 720;
+scDesc.createDepthStencil = true;
+
+auto swapChain = CreateSwapChain(*core, scDesc);
+
+swapChain.Clear(core->GetImmediateContext());
+swapChain.BindAndSetViewport(core->GetImmediateContext());
+// draw...
+swapChain.Present(1, 0);
+```
+
+---
+
+## サンプル
+
+代表的なサンプル:
+
+```text
+sample/03_HelloTriangle         low-level swapchain helper example
+sample/18_TextureTransfer       Texture2D <-> D3D11CpuImage transfer
+sample/19_PresentationWindow    D3D11SwapChain window render-loop sample
 ```
 
 ---
 
 ## ビルド
 
-### 必要環境
-
-- Windows 10 / 11
-- Visual Studio 2019 以降（MSVC、C++17）
-- CMake 3.20 以降
-- Direct3D 11 対応 GPU（WARP でも一部テスト可能）
-- DXC を使う場合は `dxcompiler.dll` / `dxil.dll`
-
-### CMake ビルド
+Visual Studio / CMake を使います。
 
 ```bat
-cmake -S . -B out/build/default -DD3D11HELPER_BUILD_SAMPLES=ON -DD3D11HELPER_BUILD_TESTS=ON
-cmake --build out/build/default --config Release
-ctest --test-dir out/build/default -C Release --output-on-failure
-```
-
-### オプション
-
-| CMake オプション | デフォルト | 説明 |
-|---|---:|---|
-| `D3D11HELPER_BUILD_SAMPLES` | `ON` | サンプルをビルドする |
-| `D3D11HELPER_BUILD_TESTS` | `ON` | テストをビルドする |
-| `D3D11HELPER_ENABLE_WARNINGS` | `ON` | コンパイラ警告を有効にする |
-| `D3D11HELPER_DXC_RUNTIME_DIR` | 空 | `dxcompiler.dll` / `dxil.dll` を含むディレクトリ |
-| `D3D11HELPER_COPY_DXC_RUNTIME` | `ON` | DXC ランタイム DLL を実行ファイル横へコピーする |
-
----
-
-## サンプル
-
-| # | 名前 | 概要 | ウィンドウ |
-|---|---|---|---|
-| 01 | HelloDevice | 初期化 → アダプタ情報表示 | 不要 |
-| 02 | ComputeGrayscale | GPU でグレースケール変換 → CPU readback 検証 | 不要 |
-| 03 | HelloTriangle | Win32 ウィンドウに三角形を描画 | あり |
-| 04 | BufferCompute | Structured Buffer で GPU 計算 | 不要 |
-| 05 | DynamicStreaming | 毎フレーム CPU→GPU テクスチャ更新 | 不要 |
-| 06 | SharedResource | 2 デバイス間の共有テクスチャ + D3D11.4 Fence | 不要 |
-| 07 | ProcessingFusedConvertResize | NV12 → RGBA resize を fused dispatch | 不要 |
-| 08 | ProcessingP010Rgba16 | P010 / RGBA16F の Processing API 使用例 | 不要 |
-
-詳細は [`sample/README.md`](sample/README.md) を参照してください。
-
----
-
-## テスト
-
-```bat
+cmake -S . -B out/build/default -G "Visual Studio 17 2022" -A x64
+cmake --build out/build/default --config Debug --parallel
 ctest --test-dir out/build/default -C Debug --output-on-failure
 ```
 
-Processing のみ実行する場合:
+または、リポジトリ付属の `build_and_test.cmd` を使えます。
 
 ```bat
-ctest --test-dir out/build/default -C Debug -R Processing --output-on-failure
+build_and_test.cmd
 ```
-
----
-
-## D3D12Helper との対応
-
-| 機能カテゴリ | D3D12Helper | D3D11Helper |
-|---|---|---|
-| Foundation | Common / HRESULT / DXGI utility | Common / HRESULT / DXGI utility |
-| Core | Device / Queue / Fence / CommandContext | Device / Immediate Context / Deferred Context |
-| GPU object | Resource / Descriptor / Upload / Readback / Pipeline | Resource / View object / Staging / Pipeline |
-| Presentation | SwapChain / BackBuffer | SwapChain / BackBuffer |
-| Processing | Record commands into command list | Dispatch on `ID3D11DeviceContext*` |
-| Interop | SharedResource / Fence | SharedResource / D3D11.4 Fence |
-| Diagnostics | Debug Layer / InfoQueue / GPU validation | Debug Layer / InfoQueue / LiveObject report |
-
-D3D11 側では、D3D12 の Barrier / DescriptorHeap / UploadBuffer を無理に模倣しません。D3D11 の View object、Immediate/Deferred Context、`UpdateSubresource`、staging resource を使って同じ目的を自然に表現します。
 
 ---
 
 ## ドキュメント
 
-| ファイル | 内容 |
-|---|---|
-| [`doc/README.md`](doc/README.md) | ドキュメント入口 |
-| [`doc/Architecture.md`](doc/Architecture.md) | v1.1.0 モジュール構成 |
-| [`doc/D3D11Foundation.md`](doc/D3D11Foundation.md) | Foundation API |
-| [`doc/D3D11Core.md`](doc/D3D11Core.md) | Core API |
-| [`doc/D3D11Gpu.md`](doc/D3D11Gpu.md) | GPU resource / view / pipeline API |
-| [`doc/D3D11Framework.md`](doc/D3D11Framework.md) | 旧 Framework 互換パスの説明 |
-| [`doc/D3D11Presentation.md`](doc/D3D11Presentation.md) | Presentation API |
-| [`doc/D3D11Processing.md`](doc/D3D11Processing.md) | Processing API |
-| [`doc/D3D11Interop.md`](doc/D3D11Interop.md) | Interop API |
-| [`doc/D3D11Diagnostics.md`](doc/D3D11Diagnostics.md) | Diagnostics API |
-| [`doc/Patterns.md`](doc/Patterns.md) | よくある処理パターン |
-| [`sample/README.md`](sample/README.md) | サンプル一覧 |
-| [`Test/README.md`](Test/README.md) | テスト構成 |
+詳しくは [`doc/README.md`](doc/README.md) を参照してください。
+
+主要ファイル:
+
+- [`doc/Architecture.md`](doc/Architecture.md)
+- [`doc/D3D11Gpu.md`](doc/D3D11Gpu.md)
+- [`doc/D3D11TextureTransfer.md`](doc/D3D11TextureTransfer.md)
+- [`doc/D3D11Presentation.md`](doc/D3D11Presentation.md)
+- [`doc/Patterns.md`](doc/Patterns.md)
+- [`CHANGELOG.md`](CHANGELOG.md)
 
 ---
 
-## ライセンス
+## 非目標
 
-MIT License
+D3D11Helper 本体には以下を含めません。
+
+```text
+PNG / JPEG / BMP / DDS load/save
+MP4 / H.264 / HEVC encode/decode
+Media Foundation / NVENC / FFmpeg / OpenCV integration
+Application renderer / scene graph / UI framework
+```
+
+これらは D3D11Helper の上位ライブラリで実装する方針です。

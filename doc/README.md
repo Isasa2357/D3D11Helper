@@ -1,8 +1,8 @@
-﻿# D3D11Helper ドキュメント
+# D3D11Helper ドキュメント
 
 D3D11Helper は、Direct3D 11 の定型処理を薄くラップした C++17 ヘルパライブラリです。
 
-v1.1.0 では、旧 `Layer 1 / Layer 2 / Layer 3` 表現を維持しつつ、今後の機能追加と D3D12Helper との対応を取りやすくするため、次のモジュール構成へ整理しています。
+v1.1.0 でモジュール構成を整理し、v1.2.0 で GPU/CPU texture transfer、v1.3.0 で presentation helper を追加しています。
 
 ```text
 D3D11Foundation
@@ -22,16 +22,21 @@ D3D11Diagnostics
 
 | ファイル | 内容 |
 | --- | --- |
-| [`Architecture.md`](Architecture.md) | v1.1.0 のモジュール構成と依存方向 |
+| [`Architecture.md`](Architecture.md) | v1.1.0 以降のモジュール構成と依存方向 |
 | [`D3D11Foundation.md`](D3D11Foundation.md) | DirectX/DXGI-only の基礎 utility |
 | [`D3D11Core.md`](D3D11Core.md) | device / context facade |
-| [`D3D11Gpu.md`](D3D11Gpu.md) | resource / view / staging / pipeline / shader compiler |
+| [`D3D11Gpu.md`](D3D11Gpu.md) | resource / view / staging / pipeline / shader compiler / transfer |
+| [`D3D11TextureTransfer.md`](D3D11TextureTransfer.md) | `Texture2D` と `D3D11CpuImage` 間の transfer |
 | [`D3D11Framework.md`](D3D11Framework.md) | 旧 Framework パスの互換説明 |
-| [`D3D11Presentation.md`](D3D11Presentation.md) | swapchain / backbuffer helper |
+| [`D3D11Presentation.md`](D3D11Presentation.md) | render target / swapchain / resize / present helper |
 | [`D3D11Processing.md`](D3D11Processing.md) | GPU 画像処理 |
 | [`D3D11Interop.md`](D3D11Interop.md) | shared resource / D3D11.4 fence interop |
 | [`D3D11Diagnostics.md`](D3D11Diagnostics.md) | debug layer / InfoQueue / live object report |
 | [`Patterns.md`](Patterns.md) | よくある処理パターン |
+| [`ReleaseNotes_v1.2.0.md`](ReleaseNotes_v1.2.0.md) | v1.2.0 release notes |
+| [`ReleaseNotes_v1.3.0.md`](ReleaseNotes_v1.3.0.md) | v1.3.0 release notes |
+| [`MigrationGuide_v1.2.0.md`](MigrationGuide_v1.2.0.md) | v1.2.0 migration guide |
+| [`MigrationGuide_v1.3.0.md`](MigrationGuide_v1.3.0.md) | v1.3.0 migration guide |
 | [`../sample`](../sample) | サンプルコード |
 | [`../Test`](../Test) | テストコード |
 
@@ -43,7 +48,7 @@ D3D11Diagnostics
    D3D11Helper 本体には PNG / JPEG / MP4 / H.264 / NVENC / Media Foundation encoder のような file/media I/O を含めません。上位ライブラリが必要に応じて実装します。
 
 2. **D3D11 に自然な API にする**  
-   D3D12 の DescriptorHeap / Barrier / CommandList を D3D11 に無理に持ち込まず、View object、Immediate/Deferred Context、`UpdateSubresource`、staging resource で表現します。
+   D3D12 の DescriptorHeap / Barrier / CommandList を D3D11 に無理に持ち込まず、View object、Immediate/Deferred Context、`UpdateSubresource`、staging resource、swapchain/backbuffer wrapper で表現します。
 
 3. **D3D12Helper と機能カテゴリを揃える**  
    内部実装や細部 API は D3D11 / D3D12 で異なってよいですが、Foundation / Core / Gpu / Presentation / Processing / Interop / Diagnostics という分類は揃えます。

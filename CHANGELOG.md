@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to **D3D11Helper** are documented here.
 
@@ -7,6 +7,85 @@ This project uses semantic versioning in the following style:
 - `v1.x.0`: backward-compatible feature additions and module additions
 - `v1.x.y`: bug fixes, tests, and documentation-only updates
 - `v2.0.0`: breaking public API changes, if they ever become necessary
+
+
+---
+
+## v1.3.0 - Presentation helpers
+
+### Summary
+
+`v1.3.0` expands the `D3D11Presentation` module from low-level swap-chain creation helpers into a more practical presentation layer for window rendering and offscreen render-target work.
+
+The new helpers intentionally remain thin Direct3D 11 wrappers. They do not own the application message loop, scene renderer, UI system, frame scheduler, or high-level engine policy.
+
+### Added
+
+- Added offscreen render-target wrapper:
+  - `D3D11RenderTargetDesc`
+  - `D3D11RenderTarget`
+  - `CreateRenderTarget`
+  - `MakeViewport`
+  - `SetViewport`
+  - `UnbindRenderTargets`
+- Added swap-chain wrapper with size-dependent resource management:
+  - `D3D11SwapChainDesc`
+  - `D3D11SwapChain`
+  - `CreateSwapChain`
+  - `CreateSwapChainForWindow`
+- Added optional depth/stencil target support for both render-target and swap-chain paths.
+- Added resize handling for swap chains:
+  - `Resize(width, height)`
+  - `ResizeToClientRect(hwnd)`
+- Added tests for render-target creation, binding, clearing, viewport setup, swap-chain creation, resize, and invalid-argument handling.
+- Added `sample/19_PresentationWindow`, a Win32 window render-loop sample that demonstrates `D3D11SwapChain`.
+
+### Changed
+
+- `D3D11Presentation.hpp` now includes the new presentation wrappers in addition to the existing low-level `D3D11SwapChainHelper.hpp`.
+- `CMakeLists.txt` project version updated to `1.3.0`.
+
+### Compatibility
+
+The existing low-level APIs remain available:
+
+```cpp
+ComPtr<IDXGISwapChain3> CreateSwapChainForHwnd(...);
+D3D11Resource GetSwapChainBackBuffer(IDXGISwapChain3* swapChain, UINT index);
+```
+
+New code that wants resize-safe window rendering should prefer `D3D11SwapChain`.
+
+### Supported scope
+
+The presentation helpers in `v1.3.0` intentionally focus on the common baseline:
+
+- Win32 `HWND` swap chain creation
+- flip-model swap chain
+- color backbuffer RTV management
+- optional depth/stencil target
+- viewport binding
+- clear / bind / present / resize
+- non-MSAA render targets
+
+### Notes on D3D11 flip-model swap chains
+
+`D3D11SwapChain` caches only the app-facing `GetBuffer(0)` render target. Some D3D11/DXGI environments reject `GetBuffer(1+)` on flip-model swap chains with `DXGI_ERROR_INVALID_CALL`, even when `BufferCount > 1`. The wrapper therefore exposes `BufferCount()` as the requested native swap-chain buffer count, while internally managing only the current app-facing render target.
+
+### Non-goals
+
+`v1.3.0` does **not** add a full renderer or engine framework.
+
+The following remain out of scope:
+
+- scene graph
+- material system
+- camera system
+- ImGui integration
+- frame pacing policy beyond `Present(syncInterval, flags)`
+- HDR color management
+- MSAA resolve helper
+- multi-window renderer abstraction
 
 ---
 
