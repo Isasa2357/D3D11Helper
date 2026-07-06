@@ -8,6 +8,7 @@
 //
 #include <D3D11Helper/D3D11Presentation/D3D11SwapChainHelper.hpp>
 #include <D3D11Helper/D3D11Presentation/D3D11RenderTarget.hpp>
+#include <D3D11Helper/D3D11Presentation/D3D11SwapChain.hpp>
 
 namespace D3D11CoreLib {
 namespace Presentation {

@@ -50,6 +50,7 @@ set(D3D11HELPER_SOURCES
     src/D3D11ShaderCompiler.cpp
     src/D3D11SwapChainHelper.cpp
     src/D3D11RenderTarget.cpp
+    src/D3D11SwapChain.cpp
     src/D3D11ProcessingTypes.cpp
     src/D3D11ProcessingContext.cpp
     src/D3D11ProcessingShaderCache.cpp
@@ -127,6 +128,7 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Presentation/D3D11Presentation.hpp
     include/D3D11Helper/D3D11Presentation/D3D11SwapChainHelper.hpp
     include/D3D11Helper/D3D11Presentation/D3D11RenderTarget.hpp
+    include/D3D11Helper/D3D11Presentation/D3D11SwapChain.hpp
 
     include/D3D11Helper/D3D11Interop/D3D11Interop.hpp
     include/D3D11Helper/D3D11Interop/D3D11Fence.hpp
