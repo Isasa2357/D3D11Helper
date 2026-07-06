@@ -96,6 +96,7 @@ set(D3D11HELPER_HARNESS_TEST_SOURCES
     test_ProcessingKernelFilter.cpp
     test_ProcessingMask.cpp
     test_ProcessingThreshold.cpp
+    test_ProcessingPyramid.cpp
 )
 
 add_executable(d3d11helper_tests ${D3D11HELPER_HARNESS_TEST_SOURCES})

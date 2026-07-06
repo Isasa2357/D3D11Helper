@@ -1,28 +1,17 @@
-D3D11Helper Threshold / Visualization patch files
-=================================================
+D3D11Helper Pyramid Processor cumulative patch
 
-This ZIP is an overlay patch. Extract it at the D3D11Helper repository root and overwrite existing files.
+Apply:
+  Extract this ZIP at the D3D11Helper repository root and overwrite existing files.
 
-Included cumulative features:
-  - D3D11Blurrer
-  - D3D11RegionEffect
-  - D3D11RegionBlur
-  - D3D11ColorAdjuster
-  - D3D11KernelFilter
-  - D3D11MaskProcessor
-  - D3D11ThresholdProcessor
+Added:
+  D3D11PyramidProcessor
+    - Downsample2x for RGBA-like textures
+    - Upsample2x for RGBA-like textures
+    - Point / Linear upsample
+    - Clamp / Constant edge handling
 
-New threshold / visualization features:
-  - Threshold
-  - RangeThreshold
-  - ConfidenceHeatmap
-  - ClassColorMap
-  - MaskOverlay
+Build/test:
+  build_and_test.cmd
 
-Recommended command:
+Build/test/push only on success:
   build_test_and_push_if_passed.cmd
-
-The command builds in parallel, runs ctest in parallel, and pushes only when build and tests pass.
-
-
-2026-07-06 fix: ThresholdRgba.hlsl / RangeThresholdRgba.hlsl の HLSL 予約語 pass を isPassed に変更しました。
