@@ -16,20 +16,42 @@ using namespace D3D11CoreLib;
 
 namespace {
 
-std::vector<uint8_t> MakeRgbaPattern(UINT width, UINT height) {
+std::vector<uint8_t> MakeRgbaPattern(UINT width, UINT height, UINT salt = 0) {
     std::vector<uint8_t> pixels(static_cast<size_t>(width) * height * 4);
 
     for (UINT y = 0; y < height; ++y) {
         for (UINT x = 0; x < width; ++x) {
             const size_t i = (static_cast<size_t>(y) * width + x) * 4;
-            pixels[i + 0] = static_cast<uint8_t>((x * 7 + y * 3) & 0xFF);
-            pixels[i + 1] = static_cast<uint8_t>((x * 5 + y * 11) & 0xFF);
-            pixels[i + 2] = static_cast<uint8_t>((x * 13 + y * 17) & 0xFF);
-            pixels[i + 3] = static_cast<uint8_t>(255 - ((x + y) & 0x3F));
+            pixels[i + 0] = static_cast<uint8_t>((x * 7 + y * 3 + salt) & 0xFF);
+            pixels[i + 1] = static_cast<uint8_t>((x * 5 + y * 11 + salt * 3) & 0xFF);
+            pixels[i + 2] = static_cast<uint8_t>((x * 13 + y * 17 + salt * 5) & 0xFF);
+            pixels[i + 3] = static_cast<uint8_t>(255 - ((x + y + salt) & 0x3F));
         }
     }
 
     return pixels;
+}
+
+D3D11CpuImage MakeRgbaCpuImage(UINT width, UINT height, UINT rowPitch = 0, UINT salt = 0) {
+    auto packed = MakeRgbaPattern(width, height, salt);
+    auto image = CreateCpuImage(width, height, DXGI_FORMAT_R8G8B8A8_UNORM, rowPitch);
+
+    const UINT rowBytes = width * 4;
+    UnpackRows(image.pixels.data() + static_cast<size_t>(image.planes[0].offsetBytes),
+               image.planes[0].rowPitch,
+               packed.data(),
+               rowBytes,
+               height);
+    return image;
+}
+
+std::vector<uint8_t> PackCpuImagePixels(const D3D11CpuImage& image) {
+    ValidateCpuImage(image, "PackCpuImagePixels");
+    const UINT rowBytes = GetPackedRowPitch(image.width, image.format);
+    return PackRows(image.pixels.data() + static_cast<size_t>(image.planes[0].offsetBytes),
+                    image.planes[0].rowPitch,
+                    rowBytes,
+                    image.height);
 }
 
 void ExpectPixelsEqual(const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
@@ -117,6 +139,64 @@ int main() {
         ExpectPixelsEqual(image.pixels, expected);
     });
 
+    TEST_RUN("CreateTexture2DFromCpuImage RGBA8 packed rows", {
+        constexpr UINT width = 24;
+        constexpr UINT height = 10;
+
+        auto image = MakeRgbaCpuImage(width, height, 0, 1);
+        auto texture = CreateTexture2DFromCpuImage(*core, image);
+        auto readback = ReadbackTexture2DToCpuImage(*core, texture);
+
+        ExpectPixelsEqual(readback.pixels, PackCpuImagePixels(image));
+    });
+
+    TEST_RUN("CreateTexture2DFromCpuImage RGBA8 padded rows", {
+        constexpr UINT width = 13;
+        constexpr UINT height = 9;
+        constexpr UINT rowPitch = width * 4 + 16;
+
+        auto image = MakeRgbaCpuImage(width, height, rowPitch, 2);
+        auto texture = CreateTexture2DFromCpuImage(*core, image);
+        auto readback = ReadbackTexture2DToCpuImage(*core, texture);
+
+        if (readback.planes[0].rowPitch != width * 4) {
+            throw std::runtime_error("readback should be tightly packed");
+        }
+        ExpectPixelsEqual(readback.pixels, PackCpuImagePixels(image));
+    });
+
+    TEST_RUN("UpdateTexture2DFromCpuImage RGBA8 DEFAULT", {
+        constexpr UINT width = 20;
+        constexpr UINT height = 7;
+
+        auto initial = MakeRgbaCpuImage(width, height, 0, 3);
+        auto updated = MakeRgbaCpuImage(width, height, width * 4 + 8, 4);
+
+        auto texture = CreateTexture2DFromCpuImage(*core, initial);
+        UpdateTexture2DFromCpuImage(*core, texture, updated);
+        auto readback = ReadbackTexture2DToCpuImage(*core, texture);
+
+        ExpectPixelsEqual(readback.pixels, PackCpuImagePixels(updated));
+    });
+
+    TEST_RUN("UpdateTexture2DFromCpuImage RGBA8 DYNAMIC", {
+        constexpr UINT width = 18;
+        constexpr UINT height = 11;
+
+        auto initial = MakeRgbaCpuImage(width, height, 0, 5);
+        auto updated = MakeRgbaCpuImage(width, height, width * 4 + 12, 6);
+
+        auto texture = CreateTexture2DFromCpuImage(
+            *core,
+            initial,
+            D3D11_BIND_SHADER_RESOURCE,
+            D3D11_USAGE_DYNAMIC);
+        UpdateTexture2DFromCpuImage(*core, texture, updated);
+        auto readback = ReadbackTexture2DToCpuImage(*core, texture);
+
+        ExpectPixelsEqual(readback.pixels, PackCpuImagePixels(updated));
+    });
+
     TEST_RUN("ReadbackTexture2DToCpuImage rejects null resource", {
         bool threw = false;
         try {
@@ -146,6 +226,34 @@ int main() {
         bool threw = false;
         try {
             (void)ReadbackTexture2DRegionToCpuImage(*core, texture, box);
+        } catch (const std::invalid_argument&) {
+            threw = true;
+        }
+        if (!threw) throw std::runtime_error("expected invalid_argument");
+    });
+
+    TEST_RUN("UpdateTexture2DFromCpuImage rejects size mismatch", {
+        auto initial = MakeRgbaCpuImage(8, 8, 0, 7);
+        auto wrongSize = MakeRgbaCpuImage(4, 8, 0, 8);
+        auto texture = CreateTexture2DFromCpuImage(*core, initial);
+
+        bool threw = false;
+        try {
+            UpdateTexture2DFromCpuImage(*core, texture, wrongSize);
+        } catch (const std::invalid_argument&) {
+            threw = true;
+        }
+        if (!threw) throw std::runtime_error("expected invalid_argument");
+    });
+
+    TEST_RUN("UpdateTexture2DFromCpuImage rejects format mismatch", {
+        auto initial = MakeRgbaCpuImage(8, 8, 0, 9);
+        auto wrongFormat = CreateCpuImage(8, 8, DXGI_FORMAT_R8_UNORM);
+        auto texture = CreateTexture2DFromCpuImage(*core, initial);
+
+        bool threw = false;
+        try {
+            UpdateTexture2DFromCpuImage(*core, texture, wrongFormat);
         } catch (const std::invalid_argument&) {
             threw = true;
         }

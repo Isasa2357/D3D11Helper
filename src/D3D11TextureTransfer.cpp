@@ -145,6 +145,122 @@ D3D11CpuImage MapStagingTextureToCpuImage(
     return image;
 }
 
+const D3D11CpuImagePlane& GetSinglePlaneOrThrow(
+    const D3D11CpuImage& image,
+    const char* functionName) {
+
+    ValidateCpuImage(image, functionName);
+    if (image.planes.empty()) {
+        ThrowInvalid(functionName, "image has no planes");
+    }
+    return image.planes[0];
+}
+
+const uint8_t* GetPlaneDataOrThrow(
+    const D3D11CpuImage& image,
+    const D3D11CpuImagePlane& plane,
+    const char* functionName) {
+
+    if (plane.offsetBytes > image.SizeBytes()) {
+        ThrowInvalid(functionName, "plane offset exceeds pixel buffer size");
+    }
+    return image.pixels.data() + static_cast<size_t>(plane.offsetBytes);
+}
+
+void ValidateTextureDescForUpdateTarget(
+    const D3D11_TEXTURE2D_DESC& desc,
+    const D3D11CpuImage& image,
+    const char* functionName) {
+
+    if (desc.Width != image.width || desc.Height != image.height) {
+        ThrowInvalid(functionName, "destination texture size does not match CPU image");
+    }
+    if (desc.Format != image.format) {
+        ThrowInvalid(functionName, "destination texture format does not match CPU image");
+    }
+    if (desc.SampleDesc.Count != 1) {
+        ThrowInvalid(functionName, "MSAA textures are not supported by D3D11CpuImage upload");
+    }
+    if (desc.ArraySize != 1) {
+        ThrowInvalid(functionName, "Texture2DArray upload is not supported by this overload");
+    }
+    if (!IsSinglePlaneCpuImageFormat(desc.Format)) {
+        ThrowInvalid(functionName, "unsupported destination format for D3D11CpuImage upload");
+    }
+}
+
+UINT CpuAccessFlagsForCreateUsage(D3D11_USAGE usage, const char* functionName) {
+    switch (usage) {
+        case D3D11_USAGE_DEFAULT:
+        case D3D11_USAGE_IMMUTABLE:
+            return 0;
+        case D3D11_USAGE_DYNAMIC:
+            return D3D11_CPU_ACCESS_WRITE;
+        case D3D11_USAGE_STAGING:
+            ThrowInvalid(functionName, "CreateTexture2DFromCpuImage does not create staging textures");
+            break;
+        default:
+            break;
+    }
+
+    ThrowInvalid(functionName, "unsupported D3D11_USAGE for CPU image texture creation");
+}
+
+void UpdateDefaultTextureFromCpuImage(
+    ID3D11DeviceContext* context,
+    ID3D11Texture2D* dst,
+    const D3D11CpuImage& image,
+    const D3D11CpuImagePlane& plane,
+    const char* functionName) {
+
+    if (!context) {
+        ThrowInvalid(functionName, "D3D11 device context is null");
+    }
+
+    const uint8_t* srcData = GetPlaneDataOrThrow(image, plane, functionName);
+    context->UpdateSubresource(
+        dst,
+        0,
+        nullptr,
+        srcData,
+        plane.rowPitch,
+        plane.rowPitch * image.height);
+}
+
+void UpdateDynamicTextureFromCpuImage(
+    ID3D11DeviceContext* context,
+    ID3D11Texture2D* dst,
+    const D3D11CpuImage& image,
+    const D3D11CpuImagePlane& plane,
+    const char* functionName) {
+
+    if (!context) {
+        ThrowInvalid(functionName, "D3D11 device context is null");
+    }
+
+    const uint8_t* srcData = GetPlaneDataOrThrow(image, plane, functionName);
+    const UINT rowBytes = GetPackedRowPitch(image.width, image.format);
+
+    D3D11_MAPPED_SUBRESOURCE mapped{};
+    D3D11CORE_THROW_IF_FAILED_MSG(
+        context->Map(dst, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped),
+        "Map dynamic Texture2D for CPU image upload");
+
+    try {
+        CopyRows(mapped.pData,
+                 mapped.RowPitch,
+                 srcData,
+                 plane.rowPitch,
+                 rowBytes,
+                 image.height);
+    } catch (...) {
+        context->Unmap(dst, 0);
+        throw;
+    }
+
+    context->Unmap(dst, 0);
+}
+
 } // namespace
 
 D3D11CpuImage ReadbackTexture2DToCpuImage(
@@ -227,14 +343,35 @@ D3D11Resource CreateTexture2DFromCpuImage(
     D3D11_USAGE usage,
     UINT miscFlags) {
 
-    (void)core;
-    (void)image;
-    (void)bindFlags;
-    (void)usage;
-    (void)miscFlags;
+    constexpr const char* kFunctionName = "CreateTexture2DFromCpuImage";
 
-    throw std::logic_error(
-        "CreateTexture2DFromCpuImage is scheduled for the v1.2.0 upload implementation step");
+    const D3D11CpuImagePlane& plane = GetSinglePlaneOrThrow(image, kFunctionName);
+    const uint8_t* srcData = GetPlaneDataOrThrow(image, plane, kFunctionName);
+
+    D3D11_TEXTURE2D_DESC desc{};
+    desc.Width = image.width;
+    desc.Height = image.height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = image.format;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Usage = usage;
+    desc.BindFlags = bindFlags;
+    desc.CPUAccessFlags = CpuAccessFlagsForCreateUsage(usage, kFunctionName);
+    desc.MiscFlags = miscFlags;
+
+    D3D11_SUBRESOURCE_DATA initialData{};
+    initialData.pSysMem = srcData;
+    initialData.SysMemPitch = plane.rowPitch;
+    initialData.SysMemSlicePitch = plane.rowPitch * image.height;
+
+    ComPtr<ID3D11Texture2D> texture;
+    D3D11CORE_THROW_IF_FAILED_MSG(
+        core.GetDevice()->CreateTexture2D(&desc, &initialData, texture.GetAddressOf()),
+        "Create Texture2D from D3D11CpuImage");
+
+    return D3D11Resource(texture);
 }
 
 void UpdateTexture2DFromCpuImage(
@@ -242,12 +379,36 @@ void UpdateTexture2DFromCpuImage(
     D3D11Resource& dstTexture,
     const D3D11CpuImage& image) {
 
-    (void)core;
-    (void)dstTexture;
-    (void)image;
+    constexpr const char* kFunctionName = "UpdateTexture2DFromCpuImage";
 
-    throw std::logic_error(
-        "UpdateTexture2DFromCpuImage is scheduled for the v1.2.0 upload implementation step");
+    const D3D11CpuImagePlane& plane = GetSinglePlaneOrThrow(image, kFunctionName);
+    ComPtr<ID3D11Texture2D> dst = GetTexture2DOrThrow(dstTexture, kFunctionName, "dstTexture");
+
+    D3D11_TEXTURE2D_DESC desc{};
+    dst->GetDesc(&desc);
+    ValidateTextureDescForUpdateTarget(desc, image, kFunctionName);
+
+    switch (desc.Usage) {
+        case D3D11_USAGE_DEFAULT:
+            UpdateDefaultTextureFromCpuImage(core.GetImmediateContext(), dst.Get(), image, plane, kFunctionName);
+            return;
+        case D3D11_USAGE_DYNAMIC:
+            if ((desc.CPUAccessFlags & D3D11_CPU_ACCESS_WRITE) == 0) {
+                ThrowInvalid(kFunctionName, "dynamic destination texture lacks CPU write access");
+            }
+            UpdateDynamicTextureFromCpuImage(core.GetImmediateContext(), dst.Get(), image, plane, kFunctionName);
+            return;
+        case D3D11_USAGE_IMMUTABLE:
+            ThrowInvalid(kFunctionName, "immutable textures cannot be updated");
+            break;
+        case D3D11_USAGE_STAGING:
+            ThrowInvalid(kFunctionName, "staging texture update is not supported by this helper");
+            break;
+        default:
+            break;
+    }
+
+    ThrowInvalid(kFunctionName, "unsupported D3D11_USAGE for CPU image update");
 }
 
 } // namespace D3D11CoreLib

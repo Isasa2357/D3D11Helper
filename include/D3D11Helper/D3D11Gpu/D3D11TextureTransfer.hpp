@@ -40,8 +40,12 @@ D3D11CpuImage ReadbackTexture2DRegionToCpuImage(
 // -----------------------------------------------------------------------------
 
 // Creates a Texture2D from CPU image memory.
-// The v1.2.0 step 3 patch implements readback first; upload is implemented in a
-// following step.
+// v1.2.0 supports single-plane, non-compressed formats without format
+// conversion. The image rowPitch may be tightly packed or padded.
+//
+// usage may be DEFAULT, IMMUTABLE, or DYNAMIC. DYNAMIC textures are created with
+// D3D11_CPU_ACCESS_WRITE. STAGING textures are intentionally not created by this
+// helper; use an explicit staging resource helper when needed.
 D3D11Resource CreateTexture2DFromCpuImage(
     D3D11Core& core,
     const D3D11CpuImage& image,
@@ -50,8 +54,8 @@ D3D11Resource CreateTexture2DFromCpuImage(
     UINT miscFlags = 0);
 
 // Updates an existing Texture2D from CPU image memory.
-// The v1.2.0 step 3 patch implements readback first; upload is implemented in a
-// following step.
+// The destination texture must match image width / height / format, be
+// single-plane and non-MSAA, and have usage DEFAULT or DYNAMIC.
 void UpdateTexture2DFromCpuImage(
     D3D11Core& core,
     D3D11Resource& dstTexture,
