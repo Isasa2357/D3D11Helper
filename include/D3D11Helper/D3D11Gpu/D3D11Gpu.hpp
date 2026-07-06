@@ -9,6 +9,7 @@
 #include <D3D11Helper/D3D11Gpu/D3D11StagingBuffer.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11ShaderCompiler.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11ComputePipeline.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11BindingSet.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11GraphicsPipeline.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11Helpers.hpp>
 

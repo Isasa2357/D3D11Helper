@@ -43,12 +43,18 @@ int main() {
     D3D11Resource resource;
     D3D11StagingBuffer staging;
     D3D11ComputePipeline computePipeline;
+    D3D11ComputeBindingSet computeBindings;
     D3D11GraphicsPipeline graphicsPipeline;
     D3D11Fence fence;
     Processing::ProcessingRect rect = {};
     (void)resource;
     (void)staging;
     (void)computePipeline;
+    computeBindings.SetShaderResource(0, nullptr);
+    computeBindings.SetUnorderedAccess(0, nullptr);
+    computeBindings.SetConstantBuffer(0, nullptr);
+    computeBindings.SetSampler(0, nullptr);
+    computeBindings.Clear();
     (void)graphicsPipeline;
     (void)fence;
     (void)rect;
