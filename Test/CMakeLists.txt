@@ -72,6 +72,7 @@ endfunction()
 
 add_d3d11_test(test_module_headers     test_module_headers.cpp)
 add_d3d11_test(test_cpu_image          test_cpu_image.cpp)
+add_d3d11_test(test_texture_transfer   test_texture_transfer.cpp)
 add_d3d11_test(test_utilities          test_utilities.cpp)
 add_d3d11_test(test_core               test_core.cpp)
 add_d3d11_test(test_buffer             test_buffer.cpp)
