@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //
 // D3D11GraphicsPipeline.hpp
 //
@@ -19,7 +19,6 @@
 //   - D3D11 には Root Signature が無い。リソースは直接バインドする。
 //   - InputLayout は VS のバイトコードから生成する.
 //
-
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11ShaderCompiler.hpp>
 

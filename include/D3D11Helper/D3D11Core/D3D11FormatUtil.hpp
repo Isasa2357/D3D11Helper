@@ -1,8 +1,6 @@
-﻿#pragma once
+#pragma once
 //
-// D3D11FormatUtil.hpp - compatibility wrapper
+// Compatibility wrapper for the v1.1.0 architecture migration.
+// Prefer: <D3D11Helper/D3D11Foundation/D3D11FormatUtil.hpp>
 //
-// Canonical header: <D3D11Helper/D3D11Foundation/D3D11FormatUtil.hpp>
-//
-
 #include <D3D11Helper/D3D11Foundation/D3D11FormatUtil.hpp>

@@ -1,14 +1,12 @@
 #pragma once
 //
-// D3D11Presentation.hpp - v1.1.0 module umbrella
+// D3D11Presentation.hpp - presentation module umbrella
 //
-// Presentation groups swap-chain, back-buffer, render-target, resize, viewport,
-// and present-loop helpers.  At the first migration step this module exposes the
-// existing swap-chain helper only; higher-level presentation classes will be
-// added in later versions.
+// Presentation owns swap-chain, back-buffer, render-target, resize, and present
+// helpers.  v1.1.0 only moves the existing swap-chain helper into this module;
+// richer render-target wrappers are planned for later versions.
 //
-
-#include <D3D11Helper/D3D11Framework/D3D11SwapChainHelper.hpp>
+#include <D3D11Helper/D3D11Presentation/D3D11SwapChainHelper.hpp>
 
 namespace D3D11CoreLib {
 namespace Presentation {

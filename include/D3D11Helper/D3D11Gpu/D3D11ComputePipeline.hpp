@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //
 // D3D11ComputePipeline.hpp
 //
@@ -8,7 +8,6 @@
 //   D3D12 では Root Signature + PSO が必要だが、D3D11 ではリソースを直接バインドする。
 //   本クラスは ID3D11ComputeShader を保持し、Bind / Dispatch の便利メソッドを提供する.
 //
-
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11ShaderCompiler.hpp>
 

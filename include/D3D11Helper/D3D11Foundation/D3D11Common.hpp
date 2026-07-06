@@ -1,12 +1,10 @@
-﻿#pragma once
+#pragma once
 //
-// D3D11Common.hpp - D3D11Helper common DirectX/DXGI include
+// D3D11Common.hpp - common Direct3D / DXGI includes
 //
-// This header belongs to the Foundation module because it does not own a
-// D3D11 device/context.  The old D3D11Core/D3D11Common.hpp path remains as a
-// compatibility wrapper.
+// This header belongs to D3D11Foundation in the v1.1.0 architecture.
+// The legacy path D3D11Core/D3D11Common.hpp remains as a compatibility wrapper.
 //
-
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif

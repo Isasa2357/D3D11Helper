@@ -1,9 +1,8 @@
-﻿#pragma once
+#pragma once
 //
 // ThrowIfFailed.hpp
 // HRESULT を例外化する。HRESULT値・呼び出し式・ファイル・行・任意メッセージを含める。
 //
-
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 
 #include <stdexcept>

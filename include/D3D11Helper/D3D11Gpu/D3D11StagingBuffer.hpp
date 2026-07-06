@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //
 // D3D11StagingBuffer.hpp
 // GPU→CPU 読み戻し用のステージングバッファ。
@@ -7,9 +7,8 @@
 // D3D11_CPU_ACCESS_READ で作成したバッファを Map/Unmap して読み出す。
 //
 // D3D12 と異なり D3D11 では Map/Unmap に DeviceContext が必要なため、
-// Map/Unmap の引数に context を取る.
+// Map/Unmap の引数に context を取る。
 //
-
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 
 namespace D3D11CoreLib {

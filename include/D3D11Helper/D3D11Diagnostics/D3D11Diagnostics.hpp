@@ -1,13 +1,11 @@
 #pragma once
 //
-// D3D11Diagnostics.hpp - v1.1.0 module umbrella
+// D3D11Diagnostics.hpp - diagnostics module umbrella
 //
-// Diagnostics groups debug-layer, info-queue, live-object reporting, debug
-// object names, GPU timing, frame profiling, and device-removal diagnostics.
-// This first migration step exposes the existing debug helpers only.
+// Diagnostics owns debug-layer, InfoQueue, live-object reporting, debug names,
+// and future GPU timer / profiler / device-lost helpers.
 //
-
-#include <D3D11Helper/D3D11Core/D3D11Debug.hpp>
+#include <D3D11Helper/D3D11Diagnostics/D3D11Debug.hpp>
 
 namespace D3D11CoreLib {
 namespace Diagnostics {

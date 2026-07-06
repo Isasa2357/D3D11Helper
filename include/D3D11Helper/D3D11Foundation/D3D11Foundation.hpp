@@ -1,12 +1,11 @@
-﻿#pragma once
+#pragma once
 //
-// D3D11Foundation.hpp - Foundation module umbrella
+// D3D11Foundation.hpp - DirectX/DXGI-only utility umbrella
 //
-// Foundation groups DirectX/DXGI-only utilities that do not own a D3D11
-// device/context.  The old D3D11Core/* utility paths remain as compatibility
-// wrappers during the v1.x architecture migration.
+// Foundation groups utilities that do not own a D3D11 device/context.
+// This module is intentionally dependency-light and should remain usable from
+// Core, Gpu, Presentation, Interop, Diagnostics, and Processing.
 //
-
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 #include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
 #include <D3D11Helper/D3D11Foundation/DxgiUtil.hpp>

@@ -1,8 +1,6 @@
-﻿#pragma once
+#pragma once
 //
-// DxgiUtil.hpp - compatibility wrapper
+// Compatibility wrapper for the v1.1.0 architecture migration.
+// Prefer: <D3D11Helper/D3D11Foundation/DxgiUtil.hpp>
 //
-// Canonical header: <D3D11Helper/D3D11Foundation/DxgiUtil.hpp>
-//
-
 #include <D3D11Helper/D3D11Foundation/DxgiUtil.hpp>

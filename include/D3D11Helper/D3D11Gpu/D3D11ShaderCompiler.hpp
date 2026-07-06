@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //
 // D3D11ShaderCompiler.hpp
 //
@@ -14,7 +14,6 @@
 //
 // 戻り値の ShaderBytecode は所有権を持つ。
 //
-
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 
 #include <filesystem>

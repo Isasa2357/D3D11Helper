@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
     VERSION 0.1.0
@@ -23,11 +23,11 @@ set(D3D11HELPER_INCLUDE_DIR "${D3D11HELPER_ROOT_INCLUDE_DIR}/D3D11Helper")
 set(D3D11HELPER_FOUNDATION_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Foundation")
 set(D3D11HELPER_CORE_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Core")
 set(D3D11HELPER_GPU_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Gpu")
+set(D3D11HELPER_FRAMEWORK_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Framework")
 set(D3D11HELPER_PRESENTATION_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Presentation")
+set(D3D11HELPER_PROCESSING_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Processing")
 set(D3D11HELPER_INTEROP_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Interop")
 set(D3D11HELPER_DIAGNOSTICS_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Diagnostics")
-set(D3D11HELPER_FRAMEWORK_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Framework")
-set(D3D11HELPER_PROCESSING_INCLUDE_DIR "${D3D11HELPER_INCLUDE_DIR}/D3D11Processing")
 
 set(D3D11HELPER_SOURCES
     src/ThrowIfFailed.cpp
@@ -69,11 +69,11 @@ set(D3D11HELPER_SOURCES
 )
 
 set(D3D11HELPER_PUBLIC_HEADERS
-    include/D3D11Helper/D3D11Foundation/D3D11Foundation.hpp
     include/D3D11Helper/D3D11Foundation/D3D11Common.hpp
+    include/D3D11Helper/D3D11Foundation/D3D11Foundation.hpp
     include/D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp
-    include/D3D11Helper/D3D11Foundation/DxgiUtil.hpp
     include/D3D11Helper/D3D11Foundation/DxgiAdapterSelector.hpp
+    include/D3D11Helper/D3D11Foundation/DxgiUtil.hpp
     include/D3D11Helper/D3D11Foundation/D3D11FormatUtil.hpp
 
     include/D3D11Helper/D3D11Core/D3D11Common.hpp
@@ -97,10 +97,6 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Gpu/D3D11ShaderCompiler.hpp
     include/D3D11Helper/D3D11Gpu/D3D11StagingBuffer.hpp
 
-    include/D3D11Helper/D3D11Presentation/D3D11Presentation.hpp
-    include/D3D11Helper/D3D11Interop/D3D11Interop.hpp
-    include/D3D11Helper/D3D11Diagnostics/D3D11Diagnostics.hpp
-
     include/D3D11Helper/D3D11Framework/D3D11ComputePipeline.hpp
     include/D3D11Helper/D3D11Framework/D3D11Framework.hpp
     include/D3D11Helper/D3D11Framework/D3D11GraphicsPipeline.hpp
@@ -109,6 +105,16 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Framework/D3D11ShaderCompiler.hpp
     include/D3D11Helper/D3D11Framework/D3D11StagingBuffer.hpp
     include/D3D11Helper/D3D11Framework/D3D11SwapChainHelper.hpp
+
+    include/D3D11Helper/D3D11Presentation/D3D11Presentation.hpp
+    include/D3D11Helper/D3D11Presentation/D3D11SwapChainHelper.hpp
+
+    include/D3D11Helper/D3D11Interop/D3D11Interop.hpp
+    include/D3D11Helper/D3D11Interop/D3D11Fence.hpp
+    include/D3D11Helper/D3D11Interop/D3D11SharedResource.hpp
+
+    include/D3D11Helper/D3D11Diagnostics/D3D11Diagnostics.hpp
+    include/D3D11Helper/D3D11Diagnostics/D3D11Debug.hpp
 
     include/D3D11Helper/D3D11Processing/D3D11Processing.hpp
     include/D3D11Helper/D3D11Processing/D3D11ProcessingTypes.hpp

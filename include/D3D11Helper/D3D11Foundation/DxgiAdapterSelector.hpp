@@ -1,8 +1,7 @@
-﻿#pragma once
+#pragma once
 //
 // DxgiAdapterSelector.hpp - DXGI Factory 生成とアダプタ選択
 //
-
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 
 namespace D3D11CoreLib {

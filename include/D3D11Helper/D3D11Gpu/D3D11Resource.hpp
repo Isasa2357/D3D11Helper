@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 //
 // D3D11Resource.hpp
 // ID3D11Resource の薄いラッパ。
@@ -8,7 +8,6 @@
 //   本クラスは ID3D11Resource（または Texture2D / Buffer）と D3D11_USAGE を
 //   保持するだけの軽量ラッパである.
 //
-
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 
 #include <utility>
