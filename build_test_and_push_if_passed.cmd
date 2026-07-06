@@ -10,7 +10,7 @@ if errorlevel 1 (
 git add .
 if errorlevel 1 exit /b 1
 
-git commit -m "Add D3D11 Processing region blur"
+git commit -m "Add D3D11 Processing color adjust and kernel filters"
 if errorlevel 1 exit /b 1
 
 git push

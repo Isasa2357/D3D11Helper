@@ -13,4 +13,6 @@
 #include <D3D11Helper/D3D11Processing/D3D11Blur.hpp>
 #include <D3D11Helper/D3D11Processing/D3D11RegionEffect.hpp>
 #include <D3D11Helper/D3D11Processing/D3D11RegionBlur.hpp>
+#include <D3D11Helper/D3D11Processing/D3D11ColorAdjust.hpp>
+#include <D3D11Helper/D3D11Processing/D3D11KernelFilter.hpp>
 #include <D3D11Helper/D3D11Processing/D3D11FusedPipeline.hpp>

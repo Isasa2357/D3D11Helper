@@ -53,6 +53,8 @@ set(D3D11HELPER_SOURCES
     src/D3D11Blur.cpp
     src/D3D11RegionEffect.cpp
     src/D3D11RegionBlur.cpp
+    src/D3D11ColorAdjust.cpp
+    src/D3D11KernelFilter.cpp
     src/D3D11FusedPipeline.cpp
 )
 
@@ -89,6 +91,8 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Processing/D3D11Blur.hpp
     include/D3D11Helper/D3D11Processing/D3D11RegionEffect.hpp
     include/D3D11Helper/D3D11Processing/D3D11RegionBlur.hpp
+    include/D3D11Helper/D3D11Processing/D3D11ColorAdjust.hpp
+    include/D3D11Helper/D3D11Processing/D3D11KernelFilter.hpp
     include/D3D11Helper/D3D11Processing/D3D11FusedPipeline.hpp
 )
 

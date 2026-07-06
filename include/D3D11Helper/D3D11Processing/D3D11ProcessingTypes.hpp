@@ -88,6 +88,17 @@ enum class RegionEffectMode : UINT {
     Vignette = 6,
 };
 
+enum class KernelFilterMode : UINT {
+    Custom3x3 = 0,
+    Sharpen = 1,
+    EdgeDetect = 2,
+};
+
+enum class KernelEdgeMode : UINT {
+    Clamp = 0,
+    Constant = 1,
+};
+
 struct ProcessingColorDesc {
     ProcessingColorMatrix srcMatrix = ProcessingColorMatrix::BT709;
     ProcessingColorRange  srcRange  = ProcessingColorRange::Full;
@@ -227,6 +238,44 @@ struct RegionBlurDesc {
     float blurSigma = 2.0f;
     BlurEdgeMode blurEdgeMode = BlurEdgeMode::Clamp;
     float blurBorderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+};
+
+
+
+struct ColorAdjustDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+
+    // RGB is adjusted in normalized [0, 1] space.
+    // brightness is additive, contrast/saturation are multipliers, gamma must be > 0.
+    float brightness = 0.0f;
+    float contrast = 1.0f;
+    float gamma = 1.0f;
+    float saturation = 1.0f;
+};
+
+struct KernelFilterDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect dstRect = {};
+
+    KernelFilterMode mode = KernelFilterMode::Sharpen;
+    KernelEdgeMode edgeMode = KernelEdgeMode::Clamp;
+
+    // Used only when mode == Custom3x3. Row-major 3x3 kernel.
+    float kernel[9] = {
+        0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+    };
+
+    float scale = 1.0f;
+    float bias = 0.0f;
+    bool preserveAlpha = true;
+    float borderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 };
 
 struct D3D11ProcessingCaps {
