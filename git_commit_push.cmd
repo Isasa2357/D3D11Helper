@@ -1,4 +1,0 @@
-@echo off
-git add .
-git commit -m "Add D3D11 Processing pyramid accelerated blur"
-git push
