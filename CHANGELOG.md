@@ -10,29 +10,86 @@ This project uses semantic versioning in the following style:
 
 ---
 
-## v1.4.0 - Compute binding helpers
+## v1.5.0 - Diagnostics helpers
 
 ### Summary
 
-`v1.4.0` adds compute-stage binding helpers to `D3D11Gpu`.
+`v1.5.0` expands the `D3D11Diagnostics` module beyond debug-layer setup and live-object reporting. It adds small Direct3D 11 diagnostics primitives for device lost checks, InfoQueue handling, GPU timestamp timing, and simple single-frame profiling.
 
-The goal is to make repeated compute dispatch setup safer and less verbose while staying natural to Direct3D 11. This version does **not** introduce a D3D12-style descriptor heap, shader reflection system, renderer framework, or automatic resource lifetime owner.
+The implementation intentionally remains synchronous and lightweight. It does not add trace export, CSV/JSON output, UI integration, async profiler rings, or a full performance analysis framework.
 
 ### Added
 
-- Added compute-stage binding set:
+- Added device lost diagnostics helpers:
+  - `D3D11DeviceLostInfo`
+  - `IsDeviceLost`
+  - `DeviceLostReasonName`
+  - `CheckDeviceLost`
+  - `ThrowIfDeviceLost`
+- Added InfoQueue helpers:
+  - `TryGetD3D11InfoQueue`
+  - `GetD3D11InfoQueue`
+  - `GetInfoQueueMessageCount`
+  - `ClearInfoQueueMessages`
+  - `SetInfoQueueBreakOnSeverity`
+  - `AddInfoQueueStorageFilterDenySeverity`
+- Added synchronous GPU timestamp timer:
+  - `D3D11GpuTimer`
+  - `D3D11GpuTimerResult`
+  - `D3D11ScopedGpuTimer`
+- Added simple single-frame GPU profiler:
+  - `D3D11GpuProfiler`
+  - `D3D11GpuProfilerSampleResult`
+  - `D3D11ScopedGpuProfileSample`
+- Added runtime diagnostics tests:
+  - `Test/test_diagnostics.cpp`
+- Added console diagnostics sample:
+  - `sample/21_Diagnostics`
+
+### Changed
+
+- `D3D11Diagnostics.hpp` now includes the new diagnostics helper headers.
+- `CMakeLists.txt` project version updated to `1.5.0`.
+
+### Supported scope
+
+The diagnostics helpers in `v1.5.0` focus on the safe baseline:
+
+- immediate-context timing
+- timestamp query based GPU timing
+- single-frame named samples
+- optional InfoQueue access
+- device removed/reset/HUNG/driver error classification
+- Windows/MSVC Direct3D 11 runtime testing
+
+### Non-goals
+
+The following remain out of scope for `v1.5.0`:
+
+- asynchronous multi-frame profiler ring
+- Chrome trace export
+- CSV/JSON profiler output
+- UI profiler overlay
+- event marker integration
+- automatic frame pacing analysis
+- GPU vendor-specific counters
+- ETW / PIX integration
+
+---
+
+## v1.4.0 - Binding helpers
+
+### Summary
+
+`v1.4.0` adds the first binding helper layer for compute-stage resources.
+
+The goal is not to build a descriptor heap abstraction or a render graph, but to provide small D3D11-native helpers for safe slot-based binding, explicit unbinding, and scoped state restoration.
+
+### Added
+
+- Added compute-stage binding helpers:
   - `D3D11ComputeBindingSet`
-  - `SetShaderResource`
-  - `SetUnorderedAccess`
-  - `SetConstantBuffer`
-  - `SetSampler`
-  - `Bind`
-  - `Unbind`
-  - `Clear`
-  - `Empty`
-- Added scoped save/restore helper:
   - `D3D11ScopedComputeBindings`
-- Added compute-stage helper functions:
   - `BindComputeShaderResources`
   - `BindComputeUnorderedAccessViews`
   - `BindComputeConstantBuffers`
@@ -42,59 +99,15 @@ The goal is to make repeated compute dispatch setup safer and less verbose while
   - `UnbindComputeConstantBuffers`
   - `UnbindComputeSamplers`
   - `D3D11UnbindComputeResources`
-- Added `Test/test_binding_set.cpp` with runtime coverage for:
-  - empty/clear behavior
-  - slot validation
-  - range validation
-  - zero-count no-op behavior
-  - contiguous-range holes
-  - null-entry bind/unbind
-  - global compute-stage unbind
-  - scoped restore for SRV/UAV/constant buffer/sampler
-  - idempotent `Restore()`
-  - move construction and move assignment behavior
-- Added `sample/20_ComputeBindingSet`, a file-I/O-free console sample.
-- Added `doc/D3D11BindingSet.md`.
-- Added `doc/ReleaseNotes_v1.4.0.md` and `doc/MigrationGuide_v1.4.0.md`.
+- Added validation for null contexts, invalid slots, invalid ranges, and non-zero null pointer arrays.
+- Added runtime tests for binding, unbinding, scoped restore, and move behavior.
+- Added `sample/20_ComputeBindingSet`.
 
-### Changed
+### Notes
 
-- `D3D11Gpu.hpp` now includes `D3D11BindingSet.hpp`.
-- `CMakeLists.txt` project version updated to `1.4.0`.
-- `doc/D3D11Gpu.md`, `README.md`, and `doc/README.md` now document compute binding helpers.
+`D3D11ComputeBindingSet` stores non-owning raw pointers. `D3D11ScopedComputeBindings` owns only the previously-bound state needed for restore.
 
-### Supported scope
-
-`v1.4.0` intentionally targets compute-stage binding only:
-
-- CS SRV
-- CS UAV
-- CS constant buffer
-- CS sampler
-- scoped previous-state restore for affected compute slots
-- full compute-stage unbind helper
-
-### Notes on lifetime
-
-`D3D11ComputeBindingSet` stores non-owning raw pointers. It does not keep bound resources alive. Users must keep SRV/UAV/buffer/sampler objects alive until after binding is complete.
-
-`D3D11ScopedComputeBindings` owns only the previous state it captures through `ComPtr`, so that it can restore that previous state on destruction or explicit `Restore()`.
-
-### Notes on UAV counters
-
-D3D11 exposes UAV view bindings through `CSGetUnorderedAccessViews`, but it does not expose the current append/consume UAV counter values. Therefore `D3D11ScopedComputeBindings::Restore()` restores UAV view bindings and preserves counters by passing `nullptr` for initial counts.
-
-### Non-goals
-
-`v1.4.0` does not add:
-
-- graphics-stage binding sets
-- descriptor heap abstraction
-- automatic shader reflection binding
-- material system
-- render graph
-- resource lifetime tracking
-- file/media I/O
+`D3D11ScopedComputeBindings::Restore()` restores UAV view bindings. D3D11 does not expose current UAV append/consume counter values, so restore preserves counters by passing `nullptr` initial counts when rebinding UAVs.
 
 ---
 

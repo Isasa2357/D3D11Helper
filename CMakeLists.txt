@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.20)
+﻿cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
-    VERSION 1.4.0
+    VERSION 1.5.0
     LANGUAGES CXX
 )
 
@@ -210,3 +210,4 @@ if(D3D11HELPER_BUILD_TESTS)
     enable_testing()
     add_subdirectory(Test)
 endif()
+
