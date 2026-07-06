@@ -87,6 +87,7 @@ add_d3d11_test(test_render_target      test_render_target.cpp)
 add_d3d11_test(test_swap_chain         test_swap_chain.cpp         90)
 add_d3d11_test(test_integration        test_integration.cpp        90)
 add_d3d11_test(test_multithread        test_multithread.cpp        90)
+add_d3d11_test(test_diagnostics        test_diagnostics.cpp        90)
 
 set(D3D11HELPER_HARNESS_TEST_SOURCES
     main.cpp

@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
     VERSION 1.5.0
@@ -34,6 +34,10 @@ set(D3D11HELPER_SOURCES
     src/DxgiUtil.cpp
     src/DxgiAdapterSelector.cpp
     src/D3D11Debug.cpp
+    src/D3D11DeviceLost.cpp
+    src/D3D11InfoQueue.cpp
+    src/D3D11GpuTimer.cpp
+    src/D3D11GpuProfiler.cpp
     src/D3D11DeviceContext.cpp
     src/D3D11DeferredContext.cpp
     src/D3D11Core.cpp
@@ -138,6 +142,10 @@ set(D3D11HELPER_PUBLIC_HEADERS
 
     include/D3D11Helper/D3D11Diagnostics/D3D11Diagnostics.hpp
     include/D3D11Helper/D3D11Diagnostics/D3D11Debug.hpp
+    include/D3D11Helper/D3D11Diagnostics/D3D11DeviceLost.hpp
+    include/D3D11Helper/D3D11Diagnostics/D3D11InfoQueue.hpp
+    include/D3D11Helper/D3D11Diagnostics/D3D11GpuTimer.hpp
+    include/D3D11Helper/D3D11Diagnostics/D3D11GpuProfiler.hpp
 
     include/D3D11Helper/D3D11Processing/D3D11Processing.hpp
     include/D3D11Helper/D3D11Processing/D3D11ProcessingTypes.hpp
@@ -210,4 +218,3 @@ if(D3D11HELPER_BUILD_TESTS)
     enable_testing()
     add_subdirectory(Test)
 endif()
-
