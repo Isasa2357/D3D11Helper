@@ -99,6 +99,30 @@ enum class KernelEdgeMode : UINT {
     Constant = 1,
 };
 
+
+enum class MaskChannel : UINT {
+    Red = 0,
+    Green = 1,
+    Blue = 2,
+    Alpha = 3,
+    Luma = 4,
+};
+
+enum class MaskApplyMode : UINT {
+    ApplyAlpha = 0,
+    MultiplyRgb = 1,
+    MultiplyRgba = 2,
+    ReplaceAlpha = 3,
+};
+
+enum class MaskCombineMode : UINT {
+    Add = 0,
+    Multiply = 1,
+    Max = 2,
+    Min = 3,
+    Subtract = 4,
+};
+
 struct ProcessingColorDesc {
     ProcessingColorMatrix srcMatrix = ProcessingColorMatrix::BT709;
     ProcessingColorRange  srcRange  = ProcessingColorRange::Full;
@@ -276,6 +300,68 @@ struct KernelFilterDesc {
     float bias = 0.0f;
     bool preserveAlpha = true;
     float borderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+};
+
+
+struct MaskApplyDesc {
+    DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT maskFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect srcRect = {};
+    ProcessingRect maskRect = {};
+    ProcessingRect dstRect = {};
+
+    MaskApplyMode mode = MaskApplyMode::ApplyAlpha;
+    MaskChannel channel = MaskChannel::Alpha;
+    bool invert = false;
+
+    // Final strength of the mask operation. 0 keeps src, 1 applies the full operation.
+    float strength = 1.0f;
+};
+
+struct MaskBlendDesc {
+    DXGI_FORMAT baseFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT overlayFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT maskFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect baseRect = {};
+    ProcessingRect overlayRect = {};
+    ProcessingRect maskRect = {};
+    ProcessingRect dstRect = {};
+
+    MaskChannel channel = MaskChannel::Alpha;
+    bool invert = false;
+
+    // Multiplies the mask value before blend. 0 keeps base, 1 uses mask as-is.
+    float opacity = 1.0f;
+};
+
+struct MaskCombineDesc {
+    DXGI_FORMAT maskAFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT maskBFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect maskARect = {};
+    ProcessingRect maskBRect = {};
+    ProcessingRect dstRect = {};
+
+    MaskCombineMode mode = MaskCombineMode::Max;
+    MaskChannel channelA = MaskChannel::Alpha;
+    MaskChannel channelB = MaskChannel::Alpha;
+    bool invertA = false;
+    bool invertB = false;
+
+    // Output mask value is saturate(combined * scale + bias).
+    float scale = 1.0f;
+    float bias = 0.0f;
+};
+
+struct MaskInvertDesc {
+    DXGI_FORMAT maskFormat = DXGI_FORMAT_UNKNOWN;
+    DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
+    ProcessingRect maskRect = {};
+    ProcessingRect dstRect = {};
+
+    MaskChannel channel = MaskChannel::Alpha;
 };
 
 struct D3D11ProcessingCaps {

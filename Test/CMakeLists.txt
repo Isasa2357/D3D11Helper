@@ -4,6 +4,48 @@
 enable_testing()
 
 set(D3D11HELPER_TEST_DEFAULT_TIMEOUT 60)
+set(D3D11HELPER_TEST_RUNTIME_ASSETS_TARGET D3D11HelperTestRuntimeAssets)
+set(D3D11HELPER_TEST_RUNTIME_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>")
+
+add_custom_target(${D3D11HELPER_TEST_RUNTIME_ASSETS_TARGET} ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+            "${D3D11HELPER_TEST_RUNTIME_DIR}"
+    COMMENT "Copying shared D3D11Helper test runtime assets"
+    VERBATIM
+)
+
+if(D3D11HELPER_COPY_DXC_RUNTIME)
+    d3d11helper_find_dxc_runtime()
+
+    if(D3D11HELPER_DXCOMPILER_DLL)
+        add_custom_command(TARGET ${D3D11HELPER_TEST_RUNTIME_ASSETS_TARGET} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${D3D11HELPER_DXCOMPILER_DLL}"
+                    "${D3D11HELPER_TEST_RUNTIME_DIR}"
+            VERBATIM
+        )
+    endif()
+
+    if(D3D11HELPER_DXIL_DLL)
+        add_custom_command(TARGET ${D3D11HELPER_TEST_RUNTIME_ASSETS_TARGET} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${D3D11HELPER_DXIL_DLL}"
+                    "${D3D11HELPER_TEST_RUNTIME_DIR}"
+            VERBATIM
+        )
+    endif()
+endif()
+
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../shaders")
+    add_custom_command(TARGET ${D3D11HELPER_TEST_RUNTIME_ASSETS_TARGET} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                "${D3D11HELPER_TEST_RUNTIME_DIR}/shaders"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${CMAKE_CURRENT_SOURCE_DIR}/../shaders"
+                "${D3D11HELPER_TEST_RUNTIME_DIR}/shaders"
+        VERBATIM
+    )
+endif()
 
 function(add_d3d11_test name source)
     set(timeout ${D3D11HELPER_TEST_DEFAULT_TIMEOUT})
@@ -19,9 +61,7 @@ function(add_d3d11_test name source)
         target_compile_options(${name} PRIVATE /utf-8 /W4 /permissive-)
     endif()
 
-    if(COMMAND d3d11helper_copy_dxc_runtime)
-        d3d11helper_copy_dxc_runtime(${name})
-    endif()
+    add_dependencies(${name} ${D3D11HELPER_TEST_RUNTIME_ASSETS_TARGET})
 
     add_test(NAME ${name} COMMAND ${name})
     set_tests_properties(${name} PROPERTIES
@@ -54,6 +94,7 @@ set(D3D11HELPER_HARNESS_TEST_SOURCES
     test_ProcessingRegionBlur.cpp
     test_ProcessingColorAdjust.cpp
     test_ProcessingKernelFilter.cpp
+    test_ProcessingMask.cpp
 )
 
 add_executable(d3d11helper_tests ${D3D11HELPER_HARNESS_TEST_SOURCES})
@@ -67,17 +108,7 @@ if(MSVC)
     target_compile_options(d3d11helper_tests PRIVATE /utf-8 /W4 /permissive-)
 endif()
 
-if(COMMAND d3d11helper_copy_dxc_runtime)
-    d3d11helper_copy_dxc_runtime(d3d11helper_tests)
-endif()
-
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../shaders")
-    add_custom_command(TARGET d3d11helper_tests POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/../shaders"
-            "$<TARGET_FILE_DIR:d3d11helper_tests>/shaders"
-    )
-endif()
+add_dependencies(d3d11helper_tests ${D3D11HELPER_TEST_RUNTIME_ASSETS_TARGET})
 
 set(D3D11HELPER_HARNESS_TEST_SUITES
     FormatUtil
@@ -89,6 +120,7 @@ set(D3D11HELPER_HARNESS_TEST_SUITES
     ProcessingRegionBlur
     ProcessingColorAdjust
     ProcessingKernelFilter
+    ProcessingMask
 )
 
 foreach(suite IN LISTS D3D11HELPER_HARNESS_TEST_SUITES)
