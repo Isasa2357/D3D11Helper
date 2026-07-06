@@ -1,7 +1,7 @@
-#include "TestCommon.hpp"
+﻿#include "TestCommon.hpp"
 
-#include <D3D11Helper/D3D11Core/ThrowIfFailed.hpp>
-#include <D3D11Helper/D3D11Framework/D3D11Framework.hpp>
+#include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11Gpu.hpp>
 #include <D3D11Helper/D3D11Processing/D3D11Processing.hpp>
 
 #include <cstdint>

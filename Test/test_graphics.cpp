@@ -1,5 +1,5 @@
-#include "TestUtil.hpp"
-#include <D3D11Helper/D3D11Core/ThrowIfFailed.hpp>
+﻿#include "TestUtil.hpp"
+#include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
 
 #include <stdexcept>
 

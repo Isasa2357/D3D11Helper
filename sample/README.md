@@ -99,7 +99,7 @@ CMake を使わない場合も、基本は同じです。
 
 ```cpp
 #include "D3D11Core/D3D11Core.hpp"
-#include "D3D11Framework/D3D11Framework.hpp"
+#include "D3D11Gpu/D3D11Gpu.hpp"
 #include "D3D11Processing/D3D11Processing.hpp"
 ```
 

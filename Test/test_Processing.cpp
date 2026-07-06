@@ -1,6 +1,6 @@
 ﻿#include "TestCommon.hpp"
 #include <D3D11Helper/D3D11Processing/D3D11Processing.hpp>
-#include <D3D11Helper/D3D11Core/ThrowIfFailed.hpp>
+#include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
 
 #include <algorithm>
 #include <cstdint>

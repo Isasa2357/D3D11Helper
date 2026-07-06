@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include <D3D11Helper/D3D11Core/D3D11Core.hpp>
-#include <D3D11Helper/D3D11Framework/D3D11Framework.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11Gpu.hpp>
 
 #include <cstdlib>
 #include <exception>
