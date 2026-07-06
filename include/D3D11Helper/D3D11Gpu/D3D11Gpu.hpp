@@ -1,17 +1,18 @@
-#pragma once
+﻿#pragma once
 //
-// D3D11Gpu.hpp - v1.1.0 module umbrella
+// D3D11Gpu.hpp - GPU module umbrella
 //
 // GPU groups resource, view, sampler, shader, pipeline, transfer, and binding
-// building blocks.  During the v1.1.0 migration this header temporarily forwards
-// to D3D11Framework so the new module boundary can be introduced without moving
-// implementation files in the first step.
-//
-// Later migration steps may replace this umbrella with direct includes from
-// D3D11Gpu/* and leave D3D11Framework/* as compatibility wrappers.
+// building blocks.  D3D11Framework/* remains as compatibility wrappers during
+// the v1.x architecture migration.
 //
 
-#include <D3D11Helper/D3D11Framework/D3D11Framework.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11Resource.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11StagingBuffer.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11ComputePipeline.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11GraphicsPipeline.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11Helpers.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11ShaderCompiler.hpp>
 
 namespace D3D11CoreLib {
 namespace Gpu {
