@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to **D3D11Helper** are documented here.
 
@@ -10,6 +10,76 @@ This project uses semantic versioning in the following style:
 
 ---
 
+## v1.8.0 - Interop helpers
+
+### Summary
+
+`v1.8.0` expands the `D3D11Interop` module with owned shared handle helpers, shared Texture2D creation/open helpers, keyed mutex wrappers, and D3D11.4 fence support helpers.
+
+The implementation remains DirectX/DXGI-only. It does not add D3D12Helper dependency, D3D11On12 abstraction, CUDA/Varjo/NVENC integration, Media Foundation I/O, or process-level IPC management.
+
+### Added
+
+- Added owned shared handle wrapper:
+  - `D3D11SharedHandle`
+- Added shared texture helpers:
+  - `D3D11SharedTextureSyncMode`
+  - `D3D11SharedTexture2DDesc`
+  - `D3D11SharedTexture2D`
+  - `CreateSharedTexture2D`
+  - `CreateSharedTexture2DWithHandle`
+  - `OpenSharedTexture2D`
+- Added `D3D11SharedResource::CreateSharedHandleOwned`.
+- Added keyed mutex helpers:
+  - `GetKeyedMutex`
+  - `HasKeyedMutex`
+  - `D3D11KeyedMutex`
+  - `D3D11ScopedKeyedMutexAcquire`
+- Added fence support helpers:
+  - `D3D11FenceSupportInfo`
+  - `TryGetD3D11Device5`
+  - `TryGetD3D11DeviceContext4`
+  - `CheckD3D11FenceSupport`
+  - `IsD3D11FenceSupported`
+- Added `D3D11Fence` convenience overloads for base D3D11 interfaces.
+- Added `D3D11Fence::CreateSharedHandleOwned` and `D3D11Fence::IsInitialized`.
+- Added runtime tests:
+  - `Test/test_interop_shared.cpp`
+  - `Test/test_interop_keyed_mutex.cpp`
+  - `Test/test_interop_fence.cpp`
+- Added console sample:
+  - `sample/24_Interop`
+
+### Changed
+
+- `D3D11Interop.hpp` now includes the new shared handle, shared texture, keyed mutex, and fence support headers.
+- Existing shared texture helper path now delegates to the v1.8.0 shared texture implementation.
+- `D3D11Fence` now destroys previous state before reinitialization and checks CPU wait results.
+- `CMakeLists.txt` project version updated to `1.8.0`.
+
+### Supported scope
+
+The v1.8.0 interop helpers cover:
+
+- NT shared handle ownership
+- D3D11 shared Texture2D creation/open
+- keyed mutex acquire/release protocol helpers
+- scoped keyed mutex acquire/release
+- D3D11.4 fence support checks
+- D3D11 fence shared-handle open/signal/CPU wait
+
+### Non-goals
+
+The following remain out of scope for `v1.8.0`:
+
+- D3D12 resource/fence wrapper implementation
+- D3D11On12 abstraction
+- cross-process protocol management
+- automatic synchronization scheduling or hazard tracking
+- external API integrations such as CUDA, NVENC, Varjo, OpenCV, or Media Foundation
+- file or video I/O
+
+---
 ## v1.7.0 - View / State helpers
 
 ### Summary

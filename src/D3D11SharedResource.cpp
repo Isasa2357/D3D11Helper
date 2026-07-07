@@ -1,4 +1,4 @@
-﻿//
+//
 // D3D11SharedResource.cpp
 //
 #include <D3D11Helper/D3D11Interop/D3D11SharedResource.hpp>
@@ -28,6 +28,12 @@ HANDLE D3D11SharedResource::CreateSharedHandle(
         "CreateSharedHandle failed "
         "(resource must be created with SHARED_NTHANDLE | SHARED)");
     return handle;
+}
+
+D3D11SharedHandle D3D11SharedResource::CreateSharedHandleOwned(
+    ID3D11Resource* resource,
+    LPCWSTR name) {
+    return D3D11SharedHandle(CreateSharedHandle(resource, name));
 }
 
 ComPtr<ID3D11Resource> D3D11SharedResource::OpenSharedHandle(

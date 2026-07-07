@@ -1,4 +1,4 @@
-#
+﻿#
 # sample/CMakeLists.txt
 #
 # The sample executables share the same runtime output directory for a given
@@ -119,3 +119,4 @@ d3d11helper_add_sample(D3D11Sample_20_ComputeBindingSet 20_ComputeBindingSet)
 d3d11helper_add_sample(D3D11Sample_21_Diagnostics 21_Diagnostics)
 d3d11helper_add_sample(D3D11Sample_22_CopyResolveMipmap 22_CopyResolveMipmap)
 d3d11helper_add_sample(D3D11Sample_23_ViewState 23_ViewState)
+d3d11helper_add_sample(D3D11Sample_24_Interop 24_Interop)

@@ -16,6 +16,7 @@
 // wrapper.
 //
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
+#include <D3D11Helper/D3D11Interop/D3D11SharedHandle.hpp>
 
 namespace D3D11CoreLib {
 
@@ -25,6 +26,11 @@ public:
     // resource は D3D11_RESOURCE_MISC_SHARED_NTHANDLE | SHARED で作成されている必要がある。
     // 戻り値の HANDLE は呼び出し側が CloseHandle で解放すること。
     static HANDLE CreateSharedHandle(
+        ID3D11Resource* resource,
+        LPCWSTR name = nullptr);
+
+    // NT shared handle を作成して RAII wrapper で返す。
+    static D3D11SharedHandle CreateSharedHandleOwned(
         ID3D11Resource* resource,
         LPCWSTR name = nullptr);
 

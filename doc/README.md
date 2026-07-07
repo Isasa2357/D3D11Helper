@@ -1,8 +1,8 @@
-# D3D11Helper ドキュメント
+﻿# D3D11Helper ドキュメント
 
 D3D11Helper は、Direct3D 11 の定型処理を薄くラップした C++17 ヘルパライブラリです。
 
-v1.1.0 でモジュール構成を整理し、v1.2.0 で GPU/CPU texture transfer、v1.3.0 で presentation helper、v1.4.0 で compute binding helper、v1.5.0 で diagnostics helper、v1.6.0 で copy / resolve / mipmap helper、v1.7.0 で advanced view / state helper を追加しています。
+v1.1.0 でモジュール構成を整理し、v1.2.0 で GPU/CPU texture transfer、v1.3.0 で presentation helper、v1.4.0 で compute binding helper、v1.5.0 で diagnostics helper、v1.6.0 で copy / resolve / mipmap helper、v1.7.0 で advanced view / state helper、v1.8.0 で interop helper を追加しています。
 
 ```text
 D3D11Foundation
@@ -39,16 +39,18 @@ D3D11Diagnostics
 | [`D3D11GpuTimer.md`](D3D11GpuTimer.md) | timestamp query based GPU timer |
 | [`D3D11GpuProfiler.md`](D3D11GpuProfiler.md) | simple single-frame GPU profiler |
 | [`D3D11Processing.md`](D3D11Processing.md) | GPU 画像処理 |
-| [`D3D11Interop.md`](D3D11Interop.md) | shared resource / D3D11.4 fence interop |
+| [`D3D11Interop.md`](D3D11Interop.md) | shared handle / shared texture / keyed mutex / D3D11.4 fence interop |
 | [`Patterns.md`](Patterns.md) | よくある処理パターン |
 | [`ReleaseNotes_v1.4.0.md`](ReleaseNotes_v1.4.0.md) | v1.4.0 release notes |
 | [`ReleaseNotes_v1.5.0.md`](ReleaseNotes_v1.5.0.md) | v1.5.0 release notes |
 | [`ReleaseNotes_v1.6.0.md`](ReleaseNotes_v1.6.0.md) | v1.6.0 release notes |
 | [`ReleaseNotes_v1.7.0.md`](ReleaseNotes_v1.7.0.md) | v1.7.0 release notes |
+| [`ReleaseNotes_v1.8.0.md`](ReleaseNotes_v1.8.0.md) | v1.8.0 release notes |
 | [`MigrationGuide_v1.4.0.md`](MigrationGuide_v1.4.0.md) | v1.4.0 migration guide |
 | [`MigrationGuide_v1.5.0.md`](MigrationGuide_v1.5.0.md) | v1.5.0 migration guide |
 | [`MigrationGuide_v1.6.0.md`](MigrationGuide_v1.6.0.md) | v1.6.0 migration guide |
 | [`MigrationGuide_v1.7.0.md`](MigrationGuide_v1.7.0.md) | v1.7.0 migration guide |
+| [`MigrationGuide_v1.8.0.md`](MigrationGuide_v1.8.0.md) | v1.8.0 migration guide |
 | [`../sample`](../sample) | サンプルコード |
 | [`../Test`](../Test) | テストコード |
 

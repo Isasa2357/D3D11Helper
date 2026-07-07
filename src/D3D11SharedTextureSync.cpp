@@ -1,11 +1,11 @@
-﻿//
+//
 // D3D11SharedTextureSync.cpp
 //
-// CreateSharedTexture2D overload that selects the sharing synchronization primitive.
-// Kept as a small translation unit so the large existing D3D11Helpers.cpp does not need
-// to be overwritten by Explorer-copy based updates.
+// Compatibility D3D11Gpu helper that creates a D3D11Resource shared Texture2D
+// while selecting the sharing synchronization primitive.
 //
 #include <D3D11Helper/D3D11Gpu/D3D11Helpers.hpp>
+#include <D3D11Helper/D3D11Interop/D3D11SharedTexture.hpp>
 
 #include <stdexcept>
 
@@ -16,22 +16,14 @@ D3D11Resource CreateSharedTexture2D(D3D11Core& core,
                                      UINT bindFlags,
                                      D3D11SharedTextureSyncMode syncMode) {
 
-    UINT miscFlags = 0;
-    switch (syncMode) {
-    case D3D11SharedTextureSyncMode::SharedFence:
-        miscFlags = D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED;
-        break;
-    case D3D11SharedTextureSyncMode::KeyedMutex:
-        miscFlags = D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
-        break;
-    default:
-        throw std::runtime_error("CreateSharedTexture2D: unknown syncMode");
-    }
+    D3D11SharedTexture2DDesc desc{};
+    desc.width = width;
+    desc.height = height;
+    desc.format = format;
+    desc.bindFlags = bindFlags;
+    desc.syncMode = syncMode;
 
-    return CreateTexture2D(core, width, height, format,
-                           bindFlags,
-                           D3D11_USAGE_DEFAULT,
-                           miscFlags);
+    return D3D11Resource(CreateSharedTexture2D(core.GetDevice(), desc));
 }
 
 } // namespace D3D11CoreLib

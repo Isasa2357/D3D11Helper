@@ -12,6 +12,7 @@
 #include <D3D11Helper/D3D11Core/D3D11Core.hpp>
 #include <D3D11Helper/D3D11Foundation/D3D11FormatUtil.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11Resource.hpp>
+#include <D3D11Helper/D3D11Interop/D3D11SharedTexture.hpp>
 
 #include <cstdint>
 #include <vector>
@@ -220,11 +221,6 @@ ComPtr<ID3D11SamplerState> CreateSampler(
 //   SharedFence 用は SHARED_NTHANDLE | SHARED。
 //   KeyedMutex 用は SHARED_NTHANDLE | SHARED_KEYEDMUTEX。
 // --------------------------------------------------------------------------
-enum class D3D11SharedTextureSyncMode {
-    SharedFence,
-    KeyedMutex
-};
-
 D3D11Resource CreateSharedTexture2D(
     D3D11Core& core,
     UINT width, UINT height, DXGI_FORMAT format,

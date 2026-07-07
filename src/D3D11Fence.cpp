@@ -1,12 +1,44 @@
-﻿//
+//
 // D3D11Fence.cpp
 //
 #include <D3D11Helper/D3D11Interop/D3D11Fence.hpp>
+#include <D3D11Helper/D3D11Interop/D3D11FenceSupport.hpp>
 #include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
 
 #include <stdexcept>
 
 namespace D3D11CoreLib {
+namespace {
+
+bool IsValidHandle(HANDLE handle) noexcept {
+    return handle != nullptr && handle != INVALID_HANDLE_VALUE;
+}
+
+ComPtr<ID3D11Device5> RequireDevice5(ID3D11Device* device, const char* functionName) {
+    auto device5 = TryGetD3D11Device5(device);
+    if (!device5) {
+        throw std::runtime_error(std::string(functionName) + ": ID3D11Device5 is unavailable");
+    }
+    return device5;
+}
+
+ComPtr<ID3D11DeviceContext4> RequireContext4(ID3D11DeviceContext* context, const char* functionName) {
+    auto context4 = TryGetD3D11DeviceContext4(context);
+    if (!context4) {
+        throw std::runtime_error(std::string(functionName) + ": ID3D11DeviceContext4 is unavailable");
+    }
+    return context4;
+}
+
+HANDLE CreateFenceEvent() {
+    HANDLE eventHandle = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+    if (eventHandle == nullptr) {
+        D3D11CORE_THROW_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+    }
+    return eventHandle;
+}
+
+} // namespace
 
 D3D11Fence::~D3D11Fence() {
     Destroy();
@@ -42,27 +74,58 @@ void D3D11Fence::Initialize(ID3D11Device5* device5, D3D11_FENCE_FLAG flags) {
             "D3D11Fence: ID3D11Device5 required (D3D11.4 not available on this adapter)");
     }
 
+    ComPtr<ID3D11Fence> fence;
     D3D11CORE_THROW_IF_FAILED(
-        device5->CreateFence(0, flags, IID_PPV_ARGS(&m_fence)));
+        device5->CreateFence(0, flags, IID_PPV_ARGS(&fence)));
 
-    m_event = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
-    if (m_event == nullptr) {
-        D3D11CORE_THROW_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
-    }
+    HANDLE eventHandle = CreateFenceEvent();
+
+    Destroy();
+    m_fence = std::move(fence);
+    m_event = eventHandle;
+}
+
+void D3D11Fence::Initialize(ID3D11Device* device, D3D11_FENCE_FLAG flags) {
+    auto device5 = RequireDevice5(device, "D3D11Fence::Initialize");
+    Initialize(device5.Get(), flags);
 }
 
 void D3D11Fence::OpenSharedHandle(ID3D11Device5* device5, HANDLE sharedHandle) {
     if (!device5) {
         throw std::runtime_error("D3D11Fence::OpenSharedHandle: null device5");
     }
-
-    D3D11CORE_THROW_IF_FAILED(
-        device5->OpenSharedFence(sharedHandle, IID_PPV_ARGS(&m_fence)));
-
-    m_event = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
-    if (m_event == nullptr) {
-        D3D11CORE_THROW_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+    if (!IsValidHandle(sharedHandle)) {
+        throw std::invalid_argument("D3D11Fence::OpenSharedHandle: invalid shared handle");
     }
+
+    ComPtr<ID3D11Fence> fence;
+    D3D11CORE_THROW_IF_FAILED(
+        device5->OpenSharedFence(sharedHandle, IID_PPV_ARGS(&fence)));
+
+    HANDLE eventHandle = CreateFenceEvent();
+
+    Destroy();
+    m_fence = std::move(fence);
+    m_event = eventHandle;
+}
+
+void D3D11Fence::OpenSharedHandle(ID3D11Device* device, HANDLE sharedHandle) {
+    auto device5 = RequireDevice5(device, "D3D11Fence::OpenSharedHandle");
+    OpenSharedHandle(device5.Get(), sharedHandle);
+}
+
+void D3D11Fence::OpenSharedHandle(ID3D11Device5* device5, const D3D11SharedHandle& sharedHandle) {
+    if (!sharedHandle) {
+        throw std::invalid_argument("D3D11Fence::OpenSharedHandle: invalid shared handle wrapper");
+    }
+    OpenSharedHandle(device5, sharedHandle.Get());
+}
+
+void D3D11Fence::OpenSharedHandle(ID3D11Device* device, const D3D11SharedHandle& sharedHandle) {
+    if (!sharedHandle) {
+        throw std::invalid_argument("D3D11Fence::OpenSharedHandle: invalid shared handle wrapper");
+    }
+    OpenSharedHandle(device, sharedHandle.Get());
 }
 
 void D3D11Fence::Signal(ID3D11DeviceContext4* ctx, UINT64 value) {
@@ -72,6 +135,11 @@ void D3D11Fence::Signal(ID3D11DeviceContext4* ctx, UINT64 value) {
     D3D11CORE_THROW_IF_FAILED(ctx->Signal(m_fence.Get(), value));
 }
 
+void D3D11Fence::Signal(ID3D11DeviceContext* ctx, UINT64 value) {
+    auto ctx4 = RequireContext4(ctx, "D3D11Fence::Signal");
+    Signal(ctx4.Get(), value);
+}
+
 void D3D11Fence::GpuWait(ID3D11DeviceContext4* ctx, UINT64 value) {
     if (!ctx || !m_fence) {
         throw std::runtime_error("D3D11Fence::GpuWait: not initialized");
@@ -79,14 +147,22 @@ void D3D11Fence::GpuWait(ID3D11DeviceContext4* ctx, UINT64 value) {
     D3D11CORE_THROW_IF_FAILED(ctx->Wait(m_fence.Get(), value));
 }
 
+void D3D11Fence::GpuWait(ID3D11DeviceContext* ctx, UINT64 value) {
+    auto ctx4 = RequireContext4(ctx, "D3D11Fence::GpuWait");
+    GpuWait(ctx4.Get(), value);
+}
+
 void D3D11Fence::CpuWait(UINT64 value) {
-    if (!m_fence) {
+    if (!m_fence || !m_event) {
         throw std::runtime_error("D3D11Fence::CpuWait: not initialized");
     }
     if (m_fence->GetCompletedValue() < value) {
         D3D11CORE_THROW_IF_FAILED(
             m_fence->SetEventOnCompletion(value, m_event));
-        WaitForSingleObject(m_event, INFINITE);
+        const DWORD waitResult = WaitForSingleObject(m_event, INFINITE);
+        if (waitResult != WAIT_OBJECT_0) {
+            D3D11CORE_THROW_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+        }
     }
 }
 
@@ -98,6 +174,10 @@ HANDLE D3D11Fence::CreateSharedHandle() const {
     D3D11CORE_THROW_IF_FAILED(
         m_fence->CreateSharedHandle(nullptr, GENERIC_ALL, nullptr, &handle));
     return handle;
+}
+
+D3D11SharedHandle D3D11Fence::CreateSharedHandleOwned() const {
+    return D3D11SharedHandle(CreateSharedHandle());
 }
 
 UINT64 D3D11Fence::GetCompletedValue() const {

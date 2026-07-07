@@ -13,6 +13,7 @@
 // The legacy path D3D11Core/D3D11Fence.hpp remains as a compatibility wrapper.
 //
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
+#include <D3D11Helper/D3D11Interop/D3D11SharedHandle.hpp>
 
 namespace D3D11CoreLib {
 
@@ -30,11 +31,19 @@ public:
     void Initialize(ID3D11Device5* device5,
                     D3D11_FENCE_FLAG flags = D3D11_FENCE_FLAG_SHARED);
 
+    // Convenience overload. Internally queries ID3D11Device5 and throws if unavailable.
+    void Initialize(ID3D11Device* device,
+                    D3D11_FENCE_FLAG flags = D3D11_FENCE_FLAG_SHARED);
+
     // 共有ハンドルからオープンする（D3D12 の Fence と同期する場合）。
     void OpenSharedHandle(ID3D11Device5* device5, HANDLE sharedHandle);
+    void OpenSharedHandle(ID3D11Device* device, HANDLE sharedHandle);
+    void OpenSharedHandle(ID3D11Device5* device5, const D3D11SharedHandle& sharedHandle);
+    void OpenSharedHandle(ID3D11Device* device, const D3D11SharedHandle& sharedHandle);
 
     // GPU に Signal をキューイングする。
     void Signal(ID3D11DeviceContext4* ctx, UINT64 value);
+    void Signal(ID3D11DeviceContext* ctx, UINT64 value);
 
     // GPU 側で Fence 値を待つ。
     //
@@ -49,15 +58,19 @@ public:
     // 安定して動作しない場合がある。WARP を使う可能性がある場合は、GpuWait に依存せず
     // Signal + CpuWait による CPU 側同期を優先することを推奨する。
     void GpuWait(ID3D11DeviceContext4* ctx, UINT64 value);
+    void GpuWait(ID3D11DeviceContext* ctx, UINT64 value);
 
     // CPU 側で Fence 値の完了をブロック待ちする。
     void CpuWait(UINT64 value);
 
     // Fence の共有ハンドルを作成する（D3D12 側でオープンするため）。
+    // Raw HANDLE is returned for compatibility. Caller owns it and must CloseHandle.
     HANDLE CreateSharedHandle() const;
+    D3D11SharedHandle CreateSharedHandleOwned() const;
 
     UINT64       GetCompletedValue() const;
     ID3D11Fence* Get() const noexcept { return m_fence.Get(); }
+    bool         IsInitialized() const noexcept { return m_fence != nullptr; }
 
 private:
     void Destroy() noexcept;
