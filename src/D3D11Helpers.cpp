@@ -1,4 +1,4 @@
-﻿//
+//
 // D3D11Helpers.cpp
 //
 #include <D3D11Helper/D3D11Gpu/D3D11Helpers.hpp>
@@ -704,10 +704,8 @@ ComPtr<ID3D11SamplerState> CreateSampler(
 D3D11Resource CreateSharedTexture2D(D3D11Core& core,
                                      UINT width, UINT height, DXGI_FORMAT format,
                                      UINT bindFlags) {
-    return CreateTexture2D(core, width, height, format,
-                           bindFlags,
-                           D3D11_USAGE_DEFAULT,
-                           D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED);
+    return CreateSharedTexture2D(core, width, height, format, bindFlags,
+                                 D3D11SharedTextureSyncMode::SharedFence);
 }
 
 } // namespace D3D11CoreLib

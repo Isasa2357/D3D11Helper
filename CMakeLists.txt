@@ -43,7 +43,9 @@ set(D3D11HELPER_SOURCES
     src/D3D11Core.cpp
     src/D3D11Fence.cpp
     src/D3D11FormatUtil.cpp
+    src/D3D11SharedHandle.cpp
     src/D3D11SharedResource.cpp
+    src/D3D11SharedTexture.cpp
     src/D3D11Helpers.cpp
     src/D3D11SharedTextureSync.cpp
     src/D3D11StagingBuffer.cpp
@@ -148,7 +150,9 @@ set(D3D11HELPER_PUBLIC_HEADERS
 
     include/D3D11Helper/D3D11Interop/D3D11Interop.hpp
     include/D3D11Helper/D3D11Interop/D3D11Fence.hpp
+    include/D3D11Helper/D3D11Interop/D3D11SharedHandle.hpp
     include/D3D11Helper/D3D11Interop/D3D11SharedResource.hpp
+    include/D3D11Helper/D3D11Interop/D3D11SharedTexture.hpp
 
     include/D3D11Helper/D3D11Diagnostics/D3D11Diagnostics.hpp
     include/D3D11Helper/D3D11Diagnostics/D3D11Debug.hpp

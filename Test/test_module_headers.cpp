@@ -54,6 +54,9 @@ int main() {
     D3D11BufferCopyRegion bufferRegion = {};
     D3D11ResolveTexture2DDesc resolveDesc = {};
     D3D11MipGenerationSrvDesc mipSrvDesc = {};
+    D3D11SharedHandle sharedHandle;
+    D3D11SharedTexture2DDesc sharedTextureDesc = {};
+    D3D11SharedTexture2D sharedTexture = {};
     D3D11Texture2DArrayViewDesc arrayViewDesc = {};
     D3D11TextureCubeViewDesc cubeViewDesc = {};
     D3D11TextureCubeArrayViewDesc cubeArrayViewDesc = {};
@@ -70,6 +73,9 @@ int main() {
     (void)bufferRegion;
     (void)resolveDesc;
     (void)mipSrvDesc;
+    (void)sharedHandle;
+    (void)sharedTextureDesc;
+    (void)sharedTexture;
     (void)arrayViewDesc;
     (void)cubeViewDesc;
     (void)cubeArrayViewDesc;
