@@ -101,6 +101,26 @@ add_d3d11_test(test_integration        test_integration.cpp        90)
 add_d3d11_test(test_multithread        test_multithread.cpp        90)
 add_d3d11_test(test_diagnostics        test_diagnostics.cpp        90)
 
+option(D3D11HELPER_ENABLE_D3D12_INTEROP_TESTS "Build optional D3D11/D3D12 interop E2E tests" OFF)
+set(D3D11HELPER_D3D12HELPER_ROOT "" CACHE PATH "Path to D3D12Helper repository for optional D3D11/D3D12 interop tests")
+
+if(D3D11HELPER_ENABLE_D3D12_INTEROP_TESTS)
+    if(NOT D3D11HELPER_D3D12HELPER_ROOT)
+        message(FATAL_ERROR "D3D11HELPER_D3D12HELPER_ROOT must point to a D3D12Helper checkout when D3D11HELPER_ENABLE_D3D12_INTEROP_TESTS=ON")
+    endif()
+    if(NOT EXISTS "${D3D11HELPER_D3D12HELPER_ROOT}/CMakeLists.txt")
+        message(FATAL_ERROR "D3D11HELPER_D3D12HELPER_ROOT does not contain CMakeLists.txt")
+    endif()
+
+    set(D3D12HELPER_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
+    set(D3D12HELPER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    add_subdirectory("${D3D11HELPER_D3D12HELPER_ROOT}"
+                     "${CMAKE_CURRENT_BINARY_DIR}/D3D12Helper_for_interop_tests")
+
+    add_d3d11_test(test_interop_d3d12 test_interop_d3d12.cpp 120)
+    target_link_libraries(test_interop_d3d12 PRIVATE D3D12Helper::D3D12Helper)
+endif()
+
 set(D3D11HELPER_HARNESS_TEST_SOURCES
     main.cpp
     test_FormatUtil.cpp
