@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
-    VERSION 1.9.1
+    VERSION 1.10.0
     LANGUAGES CXX
 )
 
@@ -75,6 +75,7 @@ set(D3D11HELPER_SOURCES
     src/D3D11ComputePipeline.cpp
     src/D3D11GraphicsPipeline.cpp
     src/D3D11ShaderCompiler.cpp
+    src/D3D11ShaderReflection.cpp
     src/D3D11SwapChainHelper.cpp
     src/D3D11RenderTarget.cpp
     src/D3D11SwapChain.cpp
@@ -147,6 +148,7 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Gpu/D3D11Helpers.hpp
     include/D3D11Helper/D3D11Gpu/D3D11Resource.hpp
     include/D3D11Helper/D3D11Gpu/D3D11ShaderCompiler.hpp
+    include/D3D11Helper/D3D11Gpu/D3D11ShaderReflection.hpp
     include/D3D11Helper/D3D11Gpu/D3D11StagingBuffer.hpp
 
     include/D3D11Helper/D3D11Framework/D3D11ComputePipeline.hpp
