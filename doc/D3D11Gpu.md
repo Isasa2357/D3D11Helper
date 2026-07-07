@@ -1,6 +1,6 @@
 # D3D11Gpu
 
-`D3D11Gpu` は、D3D11 の resource / view / sampler / shader / pipeline / transfer / copy / resolve / mipmap / binding 系 building block をまとめるモジュールです。
+`D3D11Gpu` は、D3D11 の resource / view / state / sampler / shader / pipeline / transfer / copy / resolve / mipmap / binding 系 building block をまとめるモジュールです。
 
 旧 `D3D11Framework` の主な移行先です。
 
@@ -24,6 +24,8 @@
 #include <D3D11Helper/D3D11Gpu/D3D11Copy.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11Resolve.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11Mipmap.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11View.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11State.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11BindingSet.hpp>
 ```
 
@@ -252,6 +254,52 @@ void GenerateMips(ID3D11DeviceContext* context, ID3D11ShaderResourceView* srv);
 
 ---
 
+## D3D11View
+
+`D3D11View` は、既存の basic view helper を補完する advanced view helper です。
+
+主な型:
+
+```cpp
+struct D3D11Texture2DArrayViewDesc;
+struct D3D11TextureCubeViewDesc;
+struct D3D11TextureCubeArrayViewDesc;
+struct D3D11BufferViewDesc;
+```
+
+主な機能:
+
+- Texture2D array SRV / UAV / RTV / DSV
+- TextureCube SRV
+- TextureCubeArray SRV
+- typeless depth texture の DSV / SRV format mapping
+- depth Texture2D / Texture2DArray DSV / SRV
+- typed buffer SRV / UAV
+- structured buffer SRV / UAV
+- raw buffer SRV / UAV
+
+詳しくは [`D3D11View.md`](D3D11View.md) を参照してください。
+
+---
+
+## D3D11State
+
+`D3D11State` は、state object 作成 helper と common descriptor presets を提供します。
+
+主な機能:
+
+- `CreateSamplerState`
+- `CreateRasterizerState`
+- `CreateBlendState`
+- `CreateDepthStencilState`
+- `StatePresets::Sampler*`
+- `StatePresets::Rasterizer*`
+- `StatePresets::Blend*`
+- `StatePresets::Depth*`
+
+詳しくは [`D3D11State.md`](D3D11State.md) を参照してください。
+
+---
 ## D3D11BindingSet
 
 `D3D11BindingSet` は、v1.4.0 で追加された compute-stage binding helper です。
@@ -284,6 +332,29 @@ void D3D11UnbindComputeResources(ID3D11DeviceContext* context);
 
 ---
 
+## v1.7.0 View / State scope
+
+`v1.7.0` の view / state API は、D3D11 の view object と state object を薄く補助する baseline に絞っています。
+
+対応:
+
+- Texture2D array views
+- cube / cube-array SRVs
+- depth DSV/SRV format mapping
+- depth Texture2D and Texture2DArray DSV/SRV helpers
+- typed / structured / raw buffer views
+- common state descriptor presets
+
+非対応:
+
+- graphics-stage binding set
+- material system
+- render graph integration
+- automatic view cache
+- descriptor heap abstraction
+- shader reflection based binding
+
+---
 ## v1.6.0 Copy / Resolve / Mipmap scope
 
 `v1.6.0` の copy / resolve / mipmap API は、D3D11 の resource 操作を薄く包む baseline に絞っています。
