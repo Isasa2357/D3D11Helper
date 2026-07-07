@@ -1,8 +1,9 @@
-﻿#include <D3D11Helper/D3D11Processing/D3D11ProcessingContext.hpp>
+#include <D3D11Helper/D3D11Processing/D3D11ProcessingContext.hpp>
 #include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
 
 #include <cstring>
 #include <stdexcept>
+#include <system_error>
 #include <utility>
 
 namespace D3D11CoreLib {
@@ -21,6 +22,23 @@ UINT QueryFormatSupport(ID3D11Device* device, DXGI_FORMAT format) {
     return support;
 }
 
+bool DirectoryExists(const std::filesystem::path& path) noexcept {
+    std::error_code ec;
+    return std::filesystem::is_directory(path, ec);
+}
+
+std::filesystem::path SelectDefaultShaderDirectory() {
+    const auto cwd = std::filesystem::current_path();
+    const auto namespaced = cwd / "D3D11Helper" / "shaders" / "D3D11Processing";
+    if (DirectoryExists(namespaced)) {
+        return namespaced;
+    }
+
+    // Backward-compatible fallback for existing applications that already copy
+    // D3D11Helper shaders to a flat runtime "shaders" directory.
+    return cwd / "shaders" / "D3D11Processing";
+}
+
 constexpr UINT kProcessingConstantBufferBytes = 256;
 
 } // namespace
@@ -31,7 +49,7 @@ void D3D11ProcessingContext::Initialize(D3D11Core& core, std::filesystem::path s
     }
     m_core = &core;
     if (shaderDirectory.empty()) {
-        shaderDirectory = std::filesystem::current_path() / "shaders" / "D3D11Processing";
+        shaderDirectory = SelectDefaultShaderDirectory();
     }
     m_shaderDirectory = std::move(shaderDirectory);
     m_caps = QueryCaps(core.GetDevice());
