@@ -1,4 +1,4 @@
-﻿# D3D11Helper ドキュメント
+# D3D11Helper ドキュメント
 
 D3D11Helper は、Direct3D 11 の定型処理を薄くラップした C++17 ヘルパライブラリです。
 
@@ -23,6 +23,7 @@ D3D11Diagnostics
 | ファイル | 内容 |
 | --- | --- |
 | [`Architecture.md`](Architecture.md) | v1.1.0 以降のモジュール構成と依存方向 |
+| [`TestCoverage.md`](TestCoverage.md) | テストカバレッジ監査表と今後の強化方針 |
 | [`D3D11Foundation.md`](D3D11Foundation.md) | DirectX/DXGI-only の基礎 utility |
 | [`D3D11Core.md`](D3D11Core.md) | device / context facade |
 | [`D3D11Gpu.md`](D3D11Gpu.md) | resource / view / state / staging / pipeline / shader compiler / transfer / copy / resolve / mipmap / binding |
