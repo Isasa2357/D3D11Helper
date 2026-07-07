@@ -132,6 +132,42 @@ int main() {
         RequireBytesNear(ReadbackRgba8(*fx.core, dst), expected, 2, "color adjust brightness");
     });
 
+    TEST_RUN("ColorAdjust saturation zero golden", {
+        Fixture fx;
+        if (!fx.processing.SupportsRgba8Uav()) {
+            TestUtil::Log("Skipping: R8G8B8A8 UAV not supported");
+            return;
+        }
+
+        const std::vector<uint8_t> srcPixels = {
+            200, 100,  50, 255,
+             20, 180,  40, 128,
+        };
+        auto src = CreateTexture2DFromRGBA(*fx.core, srcPixels.data(), 2, 1, D3D11_BIND_SHADER_RESOURCE);
+
+        D3D11ColorAdjuster adjuster;
+        adjuster.Initialize(fx.processing);
+        auto dst = adjuster.CreateOutputTexture(*fx.core, 2, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+        ColorAdjustDesc desc{};
+        desc.saturation = 0.0f;
+        adjuster.DispatchColorAdjust(fx.core->GetImmediateContext(), src, dst, desc);
+
+        const uint8_t gray0 = FloatToByte(
+            (200.0f / 255.0f) * 0.2126f +
+            (100.0f / 255.0f) * 0.7152f +
+             (50.0f / 255.0f) * 0.0722f);
+        const uint8_t gray1 = FloatToByte(
+             (20.0f / 255.0f) * 0.2126f +
+            (180.0f / 255.0f) * 0.7152f +
+             (40.0f / 255.0f) * 0.0722f);
+        const std::vector<uint8_t> expected = {
+            gray0, gray0, gray0, 255,
+            gray1, gray1, gray1, 128,
+        };
+        RequireBytesNear(ReadbackRgba8(*fx.core, dst), expected, 2, "color adjust saturation zero");
+    });
+
     TEST_RUN("Kernel custom average center golden", {
         Fixture fx;
         if (!fx.processing.SupportsRgba8Uav()) {
@@ -200,6 +236,38 @@ int main() {
         RequireBytesNear(ReadbackRgba8(*fx.core, dst), expected, 2, "mask multiply rgb");
     });
 
+    TEST_RUN("Mask replace alpha inverted green golden", {
+        Fixture fx;
+        if (!fx.processing.SupportsRgba8Uav()) {
+            TestUtil::Log("Skipping: R8G8B8A8 UAV not supported");
+            return;
+        }
+
+        const auto srcPixels = MakeSolidRgba(2, 1, 10, 20, 30, 255);
+        const std::vector<uint8_t> maskPixels = {
+            0,   0, 0, 255,
+            0, 255, 0, 255,
+        };
+        auto src = CreateTexture2DFromRGBA(*fx.core, srcPixels.data(), 2, 1, D3D11_BIND_SHADER_RESOURCE);
+        auto mask = CreateTexture2DFromRGBA(*fx.core, maskPixels.data(), 2, 1, D3D11_BIND_SHADER_RESOURCE);
+
+        D3D11MaskProcessor processor;
+        processor.Initialize(fx.processing);
+        auto dst = processor.CreateOutputTexture(*fx.core, 2, 1, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+        MaskApplyDesc desc{};
+        desc.mode = MaskApplyMode::ReplaceAlpha;
+        desc.channel = MaskChannel::Green;
+        desc.invert = true;
+        processor.DispatchApplyMask(fx.core->GetImmediateContext(), src, mask, dst, desc);
+
+        const std::vector<uint8_t> expected = {
+            10, 20, 30, 255,
+            10, 20, 30,   0,
+        };
+        RequireBytesNear(ReadbackRgba8(*fx.core, dst), expected, 1, "mask replace alpha inverted green");
+    });
+
     TEST_RUN("Threshold red channel golden", {
         Fixture fx;
         if (!fx.processing.SupportsRgba8Uav()) {
@@ -229,6 +297,38 @@ int main() {
               0, 255, 0, 255,   255,   0, 0, 255,
         };
         RequireBytesNear(ReadbackRgba8(*fx.core, dst), expected, 0, "threshold red channel");
+    });
+
+    TEST_RUN("RangeThreshold luma golden", {
+        Fixture fx;
+        if (!fx.processing.SupportsRgba8Uav()) {
+            TestUtil::Log("Skipping: R8G8B8A8 UAV not supported");
+            return;
+        }
+
+        const std::vector<uint8_t> srcPixels = {
+             10,  10,  10, 255,   100, 100, 100, 255,
+            200, 200, 200, 255,   250, 250, 250, 255,
+        };
+        auto src = CreateTexture2DFromRGBA(*fx.core, srcPixels.data(), 2, 2, D3D11_BIND_SHADER_RESOURCE);
+
+        D3D11ThresholdProcessor processor;
+        processor.Initialize(fx.processing);
+        auto dst = processor.CreateOutputTexture(*fx.core, 2, 2, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+        RangeThresholdDesc desc{};
+        desc.channel = MaskChannel::Luma;
+        desc.minValue = 0.25f;
+        desc.maxValue = 0.80f;
+        desc.foregroundColor[0] = 1.0f; desc.foregroundColor[1] = 1.0f; desc.foregroundColor[2] = 1.0f; desc.foregroundColor[3] = 1.0f;
+        desc.backgroundColor[0] = 0.0f; desc.backgroundColor[1] = 0.0f; desc.backgroundColor[2] = 0.0f; desc.backgroundColor[3] = 1.0f;
+        processor.DispatchRangeThreshold(fx.core->GetImmediateContext(), src, dst, desc);
+
+        const std::vector<uint8_t> expected = {
+              0,   0,   0, 255,   255, 255, 255, 255,
+            255, 255, 255, 255,     0,   0,   0, 255,
+        };
+        RequireBytesNear(ReadbackRgba8(*fx.core, dst), expected, 0, "range threshold luma");
     });
 
     return TestUtil::Result("ProcessingEffectGolden");
