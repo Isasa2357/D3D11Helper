@@ -1,13 +1,23 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
-    VERSION 1.8.1
+    VERSION 1.9.0
     LANGUAGES CXX
 )
+
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(D3D11HELPER_INSTALL_DEFAULT ON)
+    set(D3D11HELPER_PACKAGE_SMOKE_DEFAULT ON)
+else()
+    set(D3D11HELPER_INSTALL_DEFAULT OFF)
+    set(D3D11HELPER_PACKAGE_SMOKE_DEFAULT OFF)
+endif()
 
 option(D3D11HELPER_BUILD_SAMPLES "Build D3D11Helper samples" ON)
 option(D3D11HELPER_BUILD_TESTS "Build D3D11Helper tests" ON)
 option(D3D11HELPER_ENABLE_WARNINGS "Enable compiler warnings for D3D11Helper" ON)
+option(D3D11HELPER_INSTALL "Enable D3D11Helper install rules" ${D3D11HELPER_INSTALL_DEFAULT})
+option(D3D11HELPER_ENABLE_PACKAGE_SMOKE_TESTS "Enable install/find_package smoke tests" ${D3D11HELPER_PACKAGE_SMOKE_DEFAULT})
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,6 +27,9 @@ if(NOT WIN32)
     message(WARNING "D3D11Helper is a Direct3D 11 helper library and can only be built on Windows. No targets will be generated on this platform.")
     return()
 endif()
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 set(D3D11HELPER_ROOT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(D3D11HELPER_INCLUDE_DIR "${D3D11HELPER_ROOT_INCLUDE_DIR}/D3D11Helper")
@@ -192,7 +205,8 @@ add_library(D3D11Helper::D3D11Helper ALIAS D3D11Helper)
 
 target_include_directories(D3D11Helper
     PUBLIC
-        "${D3D11HELPER_ROOT_INCLUDE_DIR}"
+        $<BUILD_INTERFACE:${D3D11HELPER_ROOT_INCLUDE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_compile_definitions(D3D11Helper
@@ -226,6 +240,51 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" PREFIX "Source" FILES ${D3D1
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" PREFIX "Header" FILES ${D3D11HELPER_PUBLIC_HEADERS})
 
 include(cmake/D3D11HelperDxcRuntime.cmake)
+
+if(D3D11HELPER_INSTALL)
+    set(D3D11HELPER_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/D3D11Helper")
+
+    install(TARGETS D3D11Helper
+        EXPORT D3D11HelperTargets
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        INCLUDES DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    )
+
+    install(DIRECTORY "${D3D11HELPER_ROOT_INCLUDE_DIR}/"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+    )
+
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/shaders/"
+        DESTINATION "${CMAKE_INSTALL_DATADIR}/D3D11Helper/shaders"
+        OPTIONAL
+    )
+
+    install(EXPORT D3D11HelperTargets
+        FILE D3D11HelperTargets.cmake
+        NAMESPACE D3D11Helper::
+        DESTINATION "${D3D11HELPER_INSTALL_CMAKEDIR}"
+    )
+
+    configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/D3D11HelperConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/D3D11HelperConfig.cmake"
+        INSTALL_DESTINATION "${D3D11HELPER_INSTALL_CMAKEDIR}"
+    )
+
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/D3D11HelperConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+    )
+
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/D3D11HelperConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/D3D11HelperConfigVersion.cmake"
+        DESTINATION "${D3D11HELPER_INSTALL_CMAKEDIR}"
+    )
+endif()
 
 if(D3D11HELPER_BUILD_SAMPLES)
     add_subdirectory(sample)
