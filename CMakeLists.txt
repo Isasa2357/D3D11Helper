@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+﻿cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
     VERSION 1.7.0
@@ -42,6 +42,7 @@ set(D3D11HELPER_SOURCES
     src/D3D11DeferredContext.cpp
     src/D3D11Core.cpp
     src/D3D11Fence.cpp
+    src/D3D11FenceSupport.cpp
     src/D3D11FormatUtil.cpp
     src/D3D11SharedHandle.cpp
     src/D3D11SharedResource.cpp
@@ -151,6 +152,7 @@ set(D3D11HELPER_PUBLIC_HEADERS
 
     include/D3D11Helper/D3D11Interop/D3D11Interop.hpp
     include/D3D11Helper/D3D11Interop/D3D11Fence.hpp
+    include/D3D11Helper/D3D11Interop/D3D11FenceSupport.hpp
     include/D3D11Helper/D3D11Interop/D3D11SharedHandle.hpp
     include/D3D11Helper/D3D11Interop/D3D11SharedResource.hpp
     include/D3D11Helper/D3D11Interop/D3D11SharedTexture.hpp

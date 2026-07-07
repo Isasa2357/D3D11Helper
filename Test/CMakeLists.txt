@@ -1,4 +1,4 @@
-#
+﻿#
 # Test/CMakeLists.txt - CTest registration
 #
 enable_testing()
@@ -84,6 +84,7 @@ add_d3d11_test(test_graphics           test_graphics.cpp)
 add_d3d11_test(test_shared_resource    test_shared_resource.cpp)
 add_d3d11_test(test_interop_shared     test_interop_shared.cpp 90)
 add_d3d11_test(test_interop_keyed_mutex test_interop_keyed_mutex.cpp 90)
+add_d3d11_test(test_interop_fence       test_interop_fence.cpp       90)
 add_d3d11_test(test_texture_transfer   test_texture_transfer.cpp 90)
 add_d3d11_test(test_copy               test_copy.cpp             90)
 add_d3d11_test(test_view_state         test_view_state.cpp       90)

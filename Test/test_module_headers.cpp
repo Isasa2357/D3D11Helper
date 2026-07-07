@@ -1,4 +1,4 @@
-//
+﻿//
 // test_module_headers.cpp
 //
 // v1.1.0 architecture smoke test.
@@ -63,6 +63,7 @@ int main() {
     D3D11SharedHandle sharedHandle;
     D3D11SharedTexture2DDesc sharedTextureDesc = {};
     D3D11SharedTexture2D sharedTexture = {};
+    D3D11FenceSupportInfo fenceSupportInfo = {};
     D3D11KeyedMutex keyedMutex;
     D3D11Texture2DArrayViewDesc arrayViewDesc = {};
     D3D11TextureCubeViewDesc cubeViewDesc = {};
@@ -83,6 +84,7 @@ int main() {
     (void)sharedHandle;
     (void)sharedTextureDesc;
     (void)sharedTexture;
+    (void)fenceSupportInfo;
     (void)keyedMutex;
     (void)arrayViewDesc;
     (void)cubeViewDesc;

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 //
 // D3D11Interop.hpp - interop module umbrella
 //
@@ -11,6 +11,7 @@
 #include <D3D11Helper/D3D11Interop/D3D11SharedTexture.hpp>
 #include <D3D11Helper/D3D11Interop/D3D11KeyedMutex.hpp>
 #include <D3D11Helper/D3D11Interop/D3D11Fence.hpp>
+#include <D3D11Helper/D3D11Interop/D3D11FenceSupport.hpp>
 
 namespace D3D11CoreLib {
 namespace Interop {
