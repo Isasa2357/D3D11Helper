@@ -54,6 +54,10 @@ int main() {
     D3D11BufferCopyRegion bufferRegion = {};
     D3D11ResolveTexture2DDesc resolveDesc = {};
     D3D11MipGenerationSrvDesc mipSrvDesc = {};
+    D3D11Texture2DArrayViewDesc arrayViewDesc = {};
+    D3D11TextureCubeViewDesc cubeViewDesc = {};
+    D3D11TextureCubeArrayViewDesc cubeArrayViewDesc = {};
+    D3D11BufferViewDesc bufferViewDesc = {};
     (void)resource;
     (void)staging;
     (void)computePipeline;
@@ -66,6 +70,15 @@ int main() {
     (void)bufferRegion;
     (void)resolveDesc;
     (void)mipSrvDesc;
+    (void)arrayViewDesc;
+    (void)cubeViewDesc;
+    (void)cubeArrayViewDesc;
+    (void)bufferViewDesc;
+
+    auto stateLinearClamp = StatePresets::SamplerLinearClamp();
+    auto stateBlendAlpha = StatePresets::BlendAlpha();
+    (void)stateLinearClamp;
+    (void)stateBlendAlpha;
 
     auto linearClamp = MakeLinearClampSamplerDesc();
     auto pointClamp = MakePointClampSamplerDesc();

@@ -52,6 +52,8 @@ set(D3D11HELPER_SOURCES
     src/D3D11Copy.cpp
     src/D3D11Resolve.cpp
     src/D3D11Mipmap.cpp
+    src/D3D11View.cpp
+    src/D3D11State.cpp
     src/D3D11BindingSet.cpp
     src/D3D11ComputePipeline.cpp
     src/D3D11GraphicsPipeline.cpp
@@ -120,6 +122,8 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Gpu/D3D11Copy.hpp
     include/D3D11Helper/D3D11Gpu/D3D11Resolve.hpp
     include/D3D11Helper/D3D11Gpu/D3D11Mipmap.hpp
+    include/D3D11Helper/D3D11Gpu/D3D11View.hpp
+    include/D3D11Helper/D3D11Gpu/D3D11State.hpp
     include/D3D11Helper/D3D11Gpu/D3D11BindingSet.hpp
     include/D3D11Helper/D3D11Gpu/D3D11ComputePipeline.hpp
     include/D3D11Helper/D3D11Gpu/D3D11GraphicsPipeline.hpp
