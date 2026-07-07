@@ -1,12 +1,39 @@
-﻿#include <D3D11Helper/D3D11Processing/D3D11ProcessingShaderCache.hpp>
+#include <D3D11Helper/D3D11Processing/D3D11ProcessingShaderCache.hpp>
 
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <system_error>
 #include <utility>
 
 namespace D3D11CoreLib {
 namespace Processing {
+namespace {
+
+bool FileExists(const std::filesystem::path& path) noexcept {
+    std::error_code ec;
+    return std::filesystem::is_regular_file(path, ec);
+}
+
+std::filesystem::path ResolveShaderPath(const std::filesystem::path& shaderDirectory, const std::string& fileName) {
+    const auto requested = shaderDirectory / fileName;
+    if (FileExists(requested)) {
+        return requested;
+    }
+
+    // Compatibility rescue for callers that explicitly pass the old default
+    // runtime path after sample/test runtime assets have moved to the helper-
+    // namespaced layout.
+    const auto namespaced = std::filesystem::current_path() /
+        "D3D11Helper" / "shaders" / "D3D11Processing" / fileName;
+    if (FileExists(namespaced)) {
+        return namespaced;
+    }
+
+    return requested;
+}
+
+} // namespace
 
 void D3D11ProcessingShaderCache::Initialize(D3D11ProcessingContext& context) {
     m_context = &context;
@@ -28,7 +55,7 @@ const ShaderBytecode& D3D11ProcessingShaderCache::GetComputeShader(
         return it->second;
     }
 
-    const auto path = m_context->ShaderDirectory() / fileName;
+    const auto path = ResolveShaderPath(m_context->ShaderDirectory(), fileName);
     if (!std::filesystem::exists(path)) {
         std::ostringstream os;
         os << "D3D11ProcessingShaderCache::GetComputeShader: shader file not found: " << path.string();
@@ -49,7 +76,7 @@ const ShaderBytecode& D3D11ProcessingShaderCache::GetComputeShader(
     desc.sourcePath = path;
     desc.entryPoint = entryPoint;
     desc.target = "cs_5_0";
-    desc.includeDirs.push_back(m_context->ShaderDirectory());
+    desc.includeDirs.push_back(path.parent_path());
     desc.defines = defines;
     desc.useDxc = false;
 
