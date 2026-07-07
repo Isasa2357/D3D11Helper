@@ -31,6 +31,21 @@ D3D11Foundation
 Processing 固有の format / plane view / HLSL / validation はこのモジュールが担当します。  
 D3D11 の実行モデルに合わせ、各処理は `ID3D11DeviceContext*` に対して `Dispatch*` で発行します。
 
+## Shader asset directory
+
+実行時 asset としては、HLSL を helper-specific root の下へ配置してください。
+
+```text
+D3D11Helper/
+  shaders/
+    D3D11Processing/
+      *.hlsl
+```
+
+`shaderDirectory` を省略した場合、`D3D11ProcessingContext` はまず `D3D11Helper/shaders/D3D11Processing` を探します。見つからない場合は、既存アプリとの互換性のために従来の `shaders/D3D11Processing` を fallback として参照します。
+
+D3D11Helper と D3D12Helper を同一アプリで使う場合、両方の HLSL を同じ flat な `shaders/` 直下へコピーしないでください。両 helper は同名 HLSL を持つ可能性があります。
+
 ## 主な機能
 
 - `D3D11ProcessingContext`
