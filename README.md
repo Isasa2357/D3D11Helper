@@ -1,8 +1,8 @@
-# D3D11Helper
+﻿# D3D11Helper
 
 **Direct3D 11** の定型処理を薄くラップした **C++17 ヘルパライブラリ**です。
 
-v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper、v1.4.0 で compute-stage binding helper、v1.5.0 で Diagnostics helper、v1.6.0 で Copy / Resolve / Mipmap helper、v1.7.0 で advanced View / State helper を追加しています。
+v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper、v1.4.0 で compute-stage binding helper、v1.5.0 で Diagnostics helper、v1.6.0 で Copy / Resolve / Mipmap helper、v1.7.0 で advanced View / State helper、v1.8.0 で shared handle / shared texture / keyed mutex / D3D11.4 Fence interop helper を追加しています。
 
 ```text
 D3D11Foundation   DirectX / DXGI only の基礎 utility
@@ -10,7 +10,7 @@ D3D11Core         Device / Immediate Context / Deferred Context / DXGI facade
 D3D11Gpu          Resource / View / State / Sampler / Shader / Pipeline / Transfer / Copy / Resolve / Mipmap / Binding
 D3D11Presentation RenderTarget / SwapChain / BackBuffer / Resize / Present
 D3D11Processing   GPU 画像処理
-D3D11Interop      SharedResource / D3D11.4 Fence / D3D11-D3D12 interop
+D3D11Interop      SharedHandle / SharedTexture / KeyedMutex / D3D11.4 Fence / D3D11-D3D12 interop
 D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer / Profiler
 ```
 
@@ -28,7 +28,7 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer 
 - **D3D11Presentation** — offscreen render target、window swapchain、backbuffer RTV、optional depth/stencil、viewport、clear、present、resize を提供。
 - **D3D11Diagnostics** — Debug Layer、InfoQueue、LiveObject report、device lost 判定、GPU timestamp timer、single-frame GPU profiler を提供。
 - **D3D11Processing** — GPU 上で format conversion、resize、remap、composite、blur、region effect、mask、threshold、pyramid、fused pipeline などを実行。
-- **D3D11Interop** — D3D11/D3D12 共有リソースと D3D11.4 Fence 同期。
+- **D3D11Interop** — owned shared handle、shared Texture2D、keyed mutex、D3D11.4 Fence support check、D3D11/D3D12 interop 向け同期補助を提供。
 - **D3D12Helper と対称的な設計** — D3D11 固有の自然な API を保ちつつ、モジュールと機能カテゴリを合わせる。
 
 ---
@@ -45,6 +45,43 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer 
 
 ---
 
+## Interop
+
+v1.8.0 以降では、`D3D11Interop` に shared handle / shared texture / keyed mutex / D3D11.4 Fence helper が追加されています。
+
+```cpp
+#include <D3D11Helper/D3D11Interop/D3D11Interop.hpp>
+
+D3D11SharedTexture2DDesc desc = {};
+desc.width = 1280;
+desc.height = 720;
+desc.format = DXGI_FORMAT_R8G8B8A8_UNORM;
+desc.bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+desc.syncMode = D3D11SharedTextureSyncMode::KeyedMutex;
+
+D3D11SharedTexture2D shared = CreateSharedTexture2DWithHandle(core->GetDevice(), desc);
+
+D3D11KeyedMutex mutex(shared.Get());
+mutex.AcquireOrThrow(0, 1000);
+// use shared texture
+mutex.Release(1);
+
+D3D11FenceSupportInfo fenceSupport = CheckD3D11FenceSupport(
+    core->GetDevice(),
+    core->GetImmediateContext());
+
+if (fenceSupport.supported) {
+    D3D11Fence fence;
+    fence.Initialize(core->GetDevice());
+    fence.Signal(core->GetImmediateContext(), 1);
+    core->Flush();
+    fence.CpuWait(1);
+}
+```
+
+`D3D11SharedHandle` は NT shared handle の所有を RAII 化します。raw `HANDLE` を返す既存 API も互換のため維持しています。
+
+---
 ## 最小例: Core 作成
 
 ```cpp
@@ -232,6 +269,7 @@ sample/20_ComputeBindingSet     compute-stage binding helper sample
 sample/21_Diagnostics           device lost / InfoQueue / GPU timer / profiler sample
 sample/22_CopyResolveMipmap     copy / resolve / mipmap helper sample
 sample/23_ViewState             advanced view / state helper sample
+sample/24_Interop              shared texture / keyed mutex / fence interop sample
 ```
 
 ---
