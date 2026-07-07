@@ -38,6 +38,12 @@ int main() {
                   "D3D11Fence must remain move-only.");
     static_assert(!std::is_copy_constructible<D3D11ScopedComputeBindings>::value,
                   "D3D11ScopedComputeBindings must remain non-copyable.");
+    static_assert(std::is_move_constructible<D3D11KeyedMutex>::value,
+                  "D3D11KeyedMutex must remain move-constructible.");
+    static_assert(!std::is_copy_constructible<D3D11KeyedMutex>::value,
+                  "D3D11KeyedMutex must remain non-copyable.");
+    static_assert(!std::is_copy_constructible<D3D11ScopedKeyedMutexAcquire>::value,
+                  "D3D11ScopedKeyedMutexAcquire must remain non-copyable.");
 
     D3D11CoreConfig config = {};
     (void)config;
@@ -57,6 +63,7 @@ int main() {
     D3D11SharedHandle sharedHandle;
     D3D11SharedTexture2DDesc sharedTextureDesc = {};
     D3D11SharedTexture2D sharedTexture = {};
+    D3D11KeyedMutex keyedMutex;
     D3D11Texture2DArrayViewDesc arrayViewDesc = {};
     D3D11TextureCubeViewDesc cubeViewDesc = {};
     D3D11TextureCubeArrayViewDesc cubeArrayViewDesc = {};
@@ -76,6 +83,7 @@ int main() {
     (void)sharedHandle;
     (void)sharedTextureDesc;
     (void)sharedTexture;
+    (void)keyedMutex;
     (void)arrayViewDesc;
     (void)cubeViewDesc;
     (void)cubeArrayViewDesc;

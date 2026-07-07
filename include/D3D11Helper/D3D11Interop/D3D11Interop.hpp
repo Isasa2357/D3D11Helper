@@ -9,6 +9,7 @@
 #include <D3D11Helper/D3D11Interop/D3D11SharedHandle.hpp>
 #include <D3D11Helper/D3D11Interop/D3D11SharedResource.hpp>
 #include <D3D11Helper/D3D11Interop/D3D11SharedTexture.hpp>
+#include <D3D11Helper/D3D11Interop/D3D11KeyedMutex.hpp>
 #include <D3D11Helper/D3D11Interop/D3D11Fence.hpp>
 
 namespace D3D11CoreLib {

@@ -42,7 +42,7 @@ D3D11_TEXTURE2D_DESC GetDesc(ID3D11Texture2D* texture) {
     return desc;
 }
 
-bool HasKeyedMutex(ID3D11Resource* resource) {
+bool HasDxgiKeyedMutex(ID3D11Resource* resource) {
     ComPtr<IDXGIKeyedMutex> mutex;
     return SUCCEEDED(resource->QueryInterface(IID_PPV_ARGS(&mutex)));
 }
@@ -141,7 +141,7 @@ int main() {
             (textureDesc.MiscFlags & D3D11_RESOURCE_MISC_SHARED) != 0) {
             throw std::runtime_error("unexpected KeyedMutex misc flags");
         }
-        if (!HasKeyedMutex(texture.Get())) {
+        if (!HasDxgiKeyedMutex(texture.Get())) {
             throw std::runtime_error("texture does not expose IDXGIKeyedMutex");
         }
     });
@@ -170,7 +170,7 @@ int main() {
         if ((keyedDesc.MiscFlags & D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX) == 0) {
             throw std::runtime_error("KeyedMutex helper missing keyed mutex flag");
         }
-        if (!HasKeyedMutex(keyedTexture.Get())) {
+        if (!HasDxgiKeyedMutex(keyedTexture.Get())) {
             throw std::runtime_error("KeyedMutex helper texture has no IDXGIKeyedMutex");
         }
     });
