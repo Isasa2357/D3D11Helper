@@ -52,6 +52,7 @@ D3D11Diagnostics
 | [`ReleaseNotes_v1.9.0.md`](ReleaseNotes_v1.9.0.md) | v1.9.0 release notes |
 | [`ReleaseNotes_v1.9.1.md`](ReleaseNotes_v1.9.1.md) | v1.9.1 release notes |
 | [`ReleaseNotes_v1.10.0.md`](ReleaseNotes_v1.10.0.md) | v1.10.0 release notes |
+| [`ReleaseNotes_v1.11.0.md`](ReleaseNotes_v1.11.0.md) | v1.11.0 release notes |
 | [`MigrationGuide_v1.4.0.md`](MigrationGuide_v1.4.0.md) | v1.4.0 migration guide |
 | [`MigrationGuide_v1.5.0.md`](MigrationGuide_v1.5.0.md) | v1.5.0 migration guide |
 | [`MigrationGuide_v1.6.0.md`](MigrationGuide_v1.6.0.md) | v1.6.0 migration guide |
