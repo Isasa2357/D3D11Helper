@@ -39,10 +39,10 @@ endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../shaders")
     add_custom_command(TARGET ${D3D11HELPER_TEST_RUNTIME_ASSETS_TARGET} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory
-                "${D3D11HELPER_TEST_RUNTIME_DIR}/shaders"
+                "${D3D11HELPER_TEST_RUNTIME_DIR}/D3D11Helper/shaders"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
                 "${CMAKE_CURRENT_SOURCE_DIR}/../shaders"
-                "${D3D11HELPER_TEST_RUNTIME_DIR}/shaders"
+                "${D3D11HELPER_TEST_RUNTIME_DIR}/D3D11Helper/shaders"
         VERBATIM
     )
 endif()
