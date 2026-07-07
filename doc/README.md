@@ -27,6 +27,7 @@ D3D11Diagnostics
 | [`D3D11Foundation.md`](D3D11Foundation.md) | DirectX/DXGI-only の基礎 utility |
 | [`D3D11Core.md`](D3D11Core.md) | device / context facade |
 | [`D3D11Gpu.md`](D3D11Gpu.md) | resource / view / state / staging / pipeline / shader compiler / transfer / copy / resolve / mipmap / binding |
+| [`D3D11ShaderReflection.md`](D3D11ShaderReflection.md) | compiled shader reflection / input layout / resource binding / cbuffer inspection |
 | [`D3D11BindingSet.md`](D3D11BindingSet.md) | compute-stage binding helper |
 | [`D3D11TextureTransfer.md`](D3D11TextureTransfer.md) | `Texture2D` と `D3D11CpuImage` 間の transfer |
 | [`D3D11Copy.md`](D3D11Copy.md) | D3D11 resource / texture / buffer copy helper |
@@ -50,6 +51,7 @@ D3D11Diagnostics
 | [`ReleaseNotes_v1.8.0.md`](ReleaseNotes_v1.8.0.md) | v1.8.0 release notes |
 | [`ReleaseNotes_v1.9.0.md`](ReleaseNotes_v1.9.0.md) | v1.9.0 release notes |
 | [`ReleaseNotes_v1.9.1.md`](ReleaseNotes_v1.9.1.md) | v1.9.1 release notes |
+| [`ReleaseNotes_v1.10.0.md`](ReleaseNotes_v1.10.0.md) | v1.10.0 release notes |
 | [`MigrationGuide_v1.4.0.md`](MigrationGuide_v1.4.0.md) | v1.4.0 migration guide |
 | [`MigrationGuide_v1.5.0.md`](MigrationGuide_v1.5.0.md) | v1.5.0 migration guide |
 | [`MigrationGuide_v1.6.0.md`](MigrationGuide_v1.6.0.md) | v1.6.0 migration guide |
