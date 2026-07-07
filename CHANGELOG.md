@@ -10,6 +10,80 @@ This project uses semantic versioning in the following style:
 
 ---
 
+## v1.6.0 - Copy / Resolve / Mipmap helpers
+
+### Summary
+
+`v1.6.0` expands the `D3D11Gpu` module with small Direct3D 11-native helpers for GPU resource copy, MSAA resolve, and automatic mipmap generation.
+
+The implementation intentionally remains a thin wrapper layer. It does not add file I/O, CPU image conversion, format conversion, async copy scheduling, render graph behavior, or high-level resource lifetime management.
+
+### Added
+
+- Added copy helpers:
+  - `D3D11Box3D`
+  - `D3D11Texture2DRegion`
+  - `D3D11BufferCopyRegion`
+  - `MakeD3D11Box`
+  - `CalcD3D11Subresource`
+  - `CopyResource`
+  - `CopySubresource`
+  - `CopyTexture2D`
+  - `CopyTexture2DSubresource`
+  - `CopyTexture2DRegion`
+  - `CopyBuffer`
+  - `CopyBufferRegion`
+- Added MSAA resolve helpers:
+  - `D3D11ResolveTexture2DDesc`
+  - `ResolveSubresource`
+  - `ResolveTexture2D`
+- Added automatic mip generation helpers:
+  - `D3D11MipGenerationSrvDesc`
+  - `IsAutoGenerateMipsSupported`
+  - `CanGenerateMipsForTexture2D`
+  - `CreateMipGenerationTexture2DSRV`
+  - `GenerateMips`
+- Added runtime tests:
+  - `Test/test_copy.cpp`
+- Added console sample:
+  - `sample/22_CopyResolveMipmap`
+
+### Changed
+
+- `D3D11Gpu.hpp` now includes `D3D11Copy.hpp`, `D3D11Resolve.hpp`, and `D3D11Mipmap.hpp`.
+- `CMakeLists.txt` project version updated to `1.6.0`.
+
+### Supported scope
+
+The copy / resolve / mipmap helpers in `v1.6.0` focus on the safe baseline:
+
+- full resource copy
+- explicit subresource copy
+- `Texture2D` full copy
+- `Texture2D` single-sample region copy
+- buffer full copy
+- buffer byte-range copy
+- MSAA `Texture2D` to single-sample `Texture2D` resolve
+- format-defaulting resolve using destination texture format
+- automatic mip generation through `ID3D11DeviceContext::GenerateMips`
+- validation for null pointers, invalid regions, invalid mip slices, invalid array slices, and unsupported mip generation texture flags
+
+### Non-goals
+
+The following remain out of scope for `v1.6.0`:
+
+- CPU readback / upload beyond existing `D3D11TextureTransfer`
+- image or video file I/O
+- format conversion or colorspace conversion
+- asynchronous copy queues or copy scheduling
+- render graph integration
+- automatic hazard tracking
+- depth/stencil resolve
+- block-compressed region copy helpers
+- mipmap generation shader customization
+
+---
+
 ## v1.5.0 - Diagnostics helpers
 
 ### Summary

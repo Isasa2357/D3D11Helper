@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
-    VERSION 1.5.0
+    VERSION 1.6.0
     LANGUAGES CXX
 )
 
@@ -49,6 +49,9 @@ set(D3D11HELPER_SOURCES
     src/D3D11StagingBuffer.cpp
     src/D3D11CpuImage.cpp
     src/D3D11TextureTransfer.cpp
+    src/D3D11Copy.cpp
+    src/D3D11Resolve.cpp
+    src/D3D11Mipmap.cpp
     src/D3D11BindingSet.cpp
     src/D3D11ComputePipeline.cpp
     src/D3D11GraphicsPipeline.cpp
@@ -114,6 +117,9 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Gpu/D3D11Gpu.hpp
     include/D3D11Helper/D3D11Gpu/D3D11CpuImage.hpp
     include/D3D11Helper/D3D11Gpu/D3D11TextureTransfer.hpp
+    include/D3D11Helper/D3D11Gpu/D3D11Copy.hpp
+    include/D3D11Helper/D3D11Gpu/D3D11Resolve.hpp
+    include/D3D11Helper/D3D11Gpu/D3D11Mipmap.hpp
     include/D3D11Helper/D3D11Gpu/D3D11BindingSet.hpp
     include/D3D11Helper/D3D11Gpu/D3D11ComputePipeline.hpp
     include/D3D11Helper/D3D11Gpu/D3D11GraphicsPipeline.hpp

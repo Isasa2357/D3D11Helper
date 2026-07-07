@@ -49,6 +49,11 @@ int main() {
     D3D11ComputeBindingSet computeBindings;
     D3D11Fence fence;
     Processing::ProcessingRect rect = {};
+    D3D11Box3D copyBox = {};
+    D3D11Texture2DRegion copyRegion = {};
+    D3D11BufferCopyRegion bufferRegion = {};
+    D3D11ResolveTexture2DDesc resolveDesc = {};
+    D3D11MipGenerationSrvDesc mipSrvDesc = {};
     (void)resource;
     (void)staging;
     (void)computePipeline;
@@ -56,6 +61,11 @@ int main() {
     (void)computeBindings;
     (void)fence;
     (void)rect;
+    (void)copyBox;
+    (void)copyRegion;
+    (void)bufferRegion;
+    (void)resolveDesc;
+    (void)mipSrvDesc;
 
     auto linearClamp = MakeLinearClampSamplerDesc();
     auto pointClamp = MakePointClampSamplerDesc();
