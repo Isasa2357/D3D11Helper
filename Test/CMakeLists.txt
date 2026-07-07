@@ -1,4 +1,4 @@
-﻿#
+#
 # Test/CMakeLists.txt - CTest registration
 #
 enable_testing()
@@ -85,6 +85,13 @@ add_d3d11_test(test_shared_resource    test_shared_resource.cpp)
 add_d3d11_test(test_interop_shared     test_interop_shared.cpp 90)
 add_d3d11_test(test_interop_keyed_mutex test_interop_keyed_mutex.cpp 90)
 add_d3d11_test(test_interop_fence       test_interop_fence.cpp       90)
+add_d3d11_test(test_interop_edge_cases  test_interop_edge_cases.cpp  90)
+add_d3d11_test(test_gpu_edge_cases      test_gpu_edge_cases.cpp      120)
+add_d3d11_test(test_presentation_diagnostics_shader_edges test_presentation_diagnostics_shader_edges.cpp 120)
+add_d3d11_test(test_processing_golden  test_processing_golden.cpp  120)
+add_d3d11_test(test_processing_effect_golden test_processing_effect_golden.cpp 120)
+add_d3d11_test(test_processing_mask_composition_golden test_processing_mask_composition_golden.cpp 120)
+add_d3d11_test(test_processing_pyramid_golden test_processing_pyramid_golden.cpp 120)
 add_d3d11_test(test_texture_transfer   test_texture_transfer.cpp 90)
 add_d3d11_test(test_copy               test_copy.cpp             90)
 add_d3d11_test(test_view_state         test_view_state.cpp       90)
