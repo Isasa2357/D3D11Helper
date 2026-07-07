@@ -181,31 +181,34 @@ int main() {
         desc.syncMode = D3D11SharedTextureSyncMode::KeyedMutex;
         auto texture = CreateSharedTexture2D(device, desc);
 
-        D3D11KeyedMutex first(texture.Get());
-        D3D11KeyedMutex second(texture.Get());
+        D3D11KeyedMutex mutex(texture.Get());
 
-        first.AcquireOrThrow(0, 1000);
-        if (second.Acquire(0, 0)) {
-            second.Release(0);
-            first.Release(0);
-            throw std::runtime_error("second wrapper unexpectedly acquired an already-owned mutex");
+        // A fresh keyed mutex is initially available only for key 0.  Using a
+        // different key with zero timeout checks the wrapper's timeout path
+        // without relying on same-device contention behavior, which can return
+        // DXGI_ERROR_INVALID_CALL on some drivers.
+        if (mutex.Acquire(5, 0)) {
+            mutex.Release(0);
+            throw std::runtime_error("wrong initial key unexpectedly acquired");
         }
-        first.Release(3);
+
+        mutex.AcquireOrThrow(0, 1000);
+        mutex.Release(3);
 
         {
-            D3D11ScopedKeyedMutexAcquire scoped(second, 3, 7, 1000);
-            if (!scoped.Acquired() || !second.IsAcquired()) {
+            D3D11ScopedKeyedMutexAcquire scoped(mutex, 3, 7, 1000);
+            if (!scoped.Acquired() || !mutex.IsAcquired()) {
                 throw std::runtime_error("scoped acquire did not acquire mutex");
             }
             scoped.ReleaseNow();
-            if (scoped.Acquired() || second.IsAcquired()) {
+            if (scoped.Acquired() || mutex.IsAcquired()) {
                 throw std::runtime_error("ReleaseNow did not release mutex");
             }
             scoped.ReleaseNow();
         }
 
-        first.AcquireOrThrow(7, 1000);
-        first.Release(0);
+        mutex.AcquireOrThrow(7, 1000);
+        mutex.Release(0);
     });
 
     TEST_RUN("KeyedMutex invalid resource and self-acquire", {
