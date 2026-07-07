@@ -41,12 +41,14 @@ D3D11Diagnostics
 | [`D3D11GpuProfiler.md`](D3D11GpuProfiler.md) | simple single-frame GPU profiler |
 | [`D3D11Processing.md`](D3D11Processing.md) | GPU 画像処理 |
 | [`D3D11Interop.md`](D3D11Interop.md) | shared handle / shared texture / keyed mutex / D3D11.4 fence interop |
+| [`Packaging.md`](Packaging.md) | install / FetchContent / find_package |
 | [`Patterns.md`](Patterns.md) | よくある処理パターン |
 | [`ReleaseNotes_v1.4.0.md`](ReleaseNotes_v1.4.0.md) | v1.4.0 release notes |
 | [`ReleaseNotes_v1.5.0.md`](ReleaseNotes_v1.5.0.md) | v1.5.0 release notes |
 | [`ReleaseNotes_v1.6.0.md`](ReleaseNotes_v1.6.0.md) | v1.6.0 release notes |
 | [`ReleaseNotes_v1.7.0.md`](ReleaseNotes_v1.7.0.md) | v1.7.0 release notes |
 | [`ReleaseNotes_v1.8.0.md`](ReleaseNotes_v1.8.0.md) | v1.8.0 release notes |
+| [`ReleaseNotes_v1.9.0.md`](ReleaseNotes_v1.9.0.md) | v1.9.0 release notes |
 | [`MigrationGuide_v1.4.0.md`](MigrationGuide_v1.4.0.md) | v1.4.0 migration guide |
 | [`MigrationGuide_v1.5.0.md`](MigrationGuide_v1.5.0.md) | v1.5.0 migration guide |
 | [`MigrationGuide_v1.6.0.md`](MigrationGuide_v1.6.0.md) | v1.6.0 migration guide |
