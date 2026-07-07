@@ -2,12 +2,12 @@
 
 **Direct3D 11** の定型処理を薄くラップした **C++17 ヘルパライブラリ**です。
 
-v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper、v1.4.0 で compute-stage binding helper、v1.5.0 で Diagnostics helper を追加しています。
+v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper、v1.4.0 で compute-stage binding helper、v1.5.0 で Diagnostics helper、v1.6.0 で Copy / Resolve / Mipmap helper を追加しています。
 
 ```text
 D3D11Foundation   DirectX / DXGI only の基礎 utility
 D3D11Core         Device / Immediate Context / Deferred Context / DXGI facade
-D3D11Gpu          Resource / View / Sampler / Shader / Pipeline / Transfer / Binding
+D3D11Gpu          Resource / View / Sampler / Shader / Pipeline / Transfer / Copy / Resolve / Mipmap / Binding
 D3D11Presentation RenderTarget / SwapChain / BackBuffer / Resize / Present
 D3D11Processing   GPU 画像処理
 D3D11Interop      SharedResource / D3D11.4 Fence / D3D11-D3D12 interop
@@ -24,7 +24,7 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer 
 
 - **DirectX / DXGI 中心** — PNG / JPEG / 動画エンコードなどの file/media I/O は本体に含めず、上位ライブラリへ分離する方針。
 - **D3D11Core** — device / immediate context / deferred context / DXGI を束ねる facade。
-- **D3D11Gpu** — buffer / texture / view / sampler / shader compiler / compute pipeline / graphics pipeline / staging / CPU transfer / binding helper を提供。
+- **D3D11Gpu** — buffer / texture / view / sampler / shader compiler / compute pipeline / graphics pipeline / staging / CPU transfer / copy / resolve / mipmap / binding helper を提供。
 - **D3D11Presentation** — offscreen render target、window swapchain、backbuffer RTV、optional depth/stencil、viewport、clear、present、resize を提供。
 - **D3D11Diagnostics** — Debug Layer、InfoQueue、LiveObject report、device lost 判定、GPU timestamp timer、single-frame GPU profiler を提供。
 - **D3D11Processing** — GPU 上で format conversion、resize、remap、composite、blur、region effect、mask、threshold、pyramid、fused pipeline などを実行。
@@ -77,6 +77,36 @@ D3D11CpuImage readback = ReadbackTexture2DToCpuImage(*core, texture);
 ```
 
 D3D11Helper 本体は PNG / JPEG / MP4 / NVENC / Media Foundation などの file/media I/O を持ちません。上位ライブラリは `D3D11CpuImage` を境界として実装します。
+
+---
+
+## Copy / Resolve / Mipmap
+
+v1.6.0 以降では、D3D11 resource 間の基本的な copy、MSAA resolve、automatic mip generation を `D3D11Gpu` で扱えます。
+
+```cpp
+#include <D3D11Helper/D3D11Gpu/D3D11Gpu.hpp>
+
+CopyTexture2D(core->GetImmediateContext(), dstTexture.Get(), srcTexture.Get());
+
+D3D11Texture2DRegion region = {};
+region.srcX = 16;
+region.srcY = 16;
+region.dstX = 0;
+region.dstY = 0;
+region.width = 128;
+region.height = 128;
+CopyTexture2DRegion(core->GetImmediateContext(), dstTexture.Get(), srcTexture.Get(), region);
+
+ResolveTexture2D(core->GetImmediateContext(), singleSampleTexture.Get(), msaaTexture.Get());
+
+if (CanGenerateMipsForTexture2D(core->GetDevice(), mipTexture.Get())) {
+    auto srv = CreateMipGenerationTexture2DSRV(core->GetDevice(), mipTexture.Get());
+    GenerateMips(core->GetImmediateContext(), srv.Get());
+}
+```
+
+`D3D11Copy` / `D3D11Resolve` / `D3D11Mipmap` は Direct3D 11 の低レベル API を薄く包む helper です。format conversion、CPU readback、file I/O は扱いません。
 
 ---
 
@@ -176,6 +206,7 @@ sample/18_TextureTransfer       Texture2D <-> D3D11CpuImage transfer
 sample/19_PresentationWindow    D3D11SwapChain window render-loop sample
 sample/20_ComputeBindingSet     compute-stage binding helper sample
 sample/21_Diagnostics           device lost / InfoQueue / GPU timer / profiler sample
+sample/22_CopyResolveMipmap     copy / resolve / mipmap helper sample
 ```
 
 ---
@@ -208,6 +239,9 @@ build_and_test.cmd
 - [`doc/D3D11Gpu.md`](doc/D3D11Gpu.md)
 - [`doc/D3D11BindingSet.md`](doc/D3D11BindingSet.md)
 - [`doc/D3D11TextureTransfer.md`](doc/D3D11TextureTransfer.md)
+- [`doc/D3D11Copy.md`](doc/D3D11Copy.md)
+- [`doc/D3D11Resolve.md`](doc/D3D11Resolve.md)
+- [`doc/D3D11Mipmap.md`](doc/D3D11Mipmap.md)
 - [`doc/D3D11Presentation.md`](doc/D3D11Presentation.md)
 - [`doc/D3D11Diagnostics.md`](doc/D3D11Diagnostics.md)
 - [`doc/D3D11GpuTimer.md`](doc/D3D11GpuTimer.md)
