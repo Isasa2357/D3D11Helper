@@ -2,12 +2,12 @@
 
 **Direct3D 11** の定型処理を薄くラップした **C++17 ヘルパライブラリ**です。
 
-v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper、v1.4.0 で compute-stage binding helper、v1.5.0 で Diagnostics helper、v1.6.0 で Copy / Resolve / Mipmap helper を追加しています。
+v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper、v1.4.0 で compute-stage binding helper、v1.5.0 で Diagnostics helper、v1.6.0 で Copy / Resolve / Mipmap helper、v1.7.0 で advanced View / State helper を追加しています。
 
 ```text
 D3D11Foundation   DirectX / DXGI only の基礎 utility
 D3D11Core         Device / Immediate Context / Deferred Context / DXGI facade
-D3D11Gpu          Resource / View / Sampler / Shader / Pipeline / Transfer / Copy / Resolve / Mipmap / Binding
+D3D11Gpu          Resource / View / State / Sampler / Shader / Pipeline / Transfer / Copy / Resolve / Mipmap / Binding
 D3D11Presentation RenderTarget / SwapChain / BackBuffer / Resize / Present
 D3D11Processing   GPU 画像処理
 D3D11Interop      SharedResource / D3D11.4 Fence / D3D11-D3D12 interop
@@ -24,7 +24,7 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer 
 
 - **DirectX / DXGI 中心** — PNG / JPEG / 動画エンコードなどの file/media I/O は本体に含めず、上位ライブラリへ分離する方針。
 - **D3D11Core** — device / immediate context / deferred context / DXGI を束ねる facade。
-- **D3D11Gpu** — buffer / texture / view / sampler / shader compiler / compute pipeline / graphics pipeline / staging / CPU transfer / copy / resolve / mipmap / binding helper を提供。
+- **D3D11Gpu** — buffer / texture / view / state / sampler / shader compiler / compute pipeline / graphics pipeline / staging / CPU transfer / copy / resolve / mipmap / binding helper を提供。
 - **D3D11Presentation** — offscreen render target、window swapchain、backbuffer RTV、optional depth/stencil、viewport、clear、present、resize を提供。
 - **D3D11Diagnostics** — Debug Layer、InfoQueue、LiveObject report、device lost 判定、GPU timestamp timer、single-frame GPU profiler を提供。
 - **D3D11Processing** — GPU 上で format conversion、resize、remap、composite、blur、region effect、mask、threshold、pyramid、fused pipeline などを実行。
@@ -78,6 +78,30 @@ D3D11CpuImage readback = ReadbackTexture2DToCpuImage(*core, texture);
 
 D3D11Helper 本体は PNG / JPEG / MP4 / NVENC / Media Foundation などの file/media I/O を持ちません。上位ライブラリは `D3D11CpuImage` を境界として実装します。
 
+---
+
+## View / State helpers
+
+v1.7.0 以降では、`D3D11Gpu` に advanced view helper と state preset helper が追加されています。
+
+```cpp
+#include <D3D11Helper/D3D11Gpu/D3D11Gpu.hpp>
+
+D3D11Texture2DArrayViewDesc arrayView = {};
+arrayView.firstArraySlice = 0;
+arrayView.arraySize = 2;
+auto srv = CreateTexture2DArraySrv(core->GetDevice(), textureArray.Get(), arrayView);
+
+auto depthDsv = CreateDepthTexture2DDsv(core->GetDevice(), depthTexture.Get());
+auto depthSrv = CreateDepthTexture2DSrv(core->GetDevice(), depthTexture.Get());
+
+auto sampler = CreateSamplerState(core->GetDevice(), StatePresets::SamplerLinearClamp());
+auto rasterizer = CreateRasterizerState(core->GetDevice(), StatePresets::RasterizerCullBack());
+auto blend = CreateBlendState(core->GetDevice(), StatePresets::BlendAlpha());
+auto depth = CreateDepthStencilState(core->GetDevice(), StatePresets::DepthDefault());
+```
+
+`D3D11View` は Texture2D array / cube / cube array / depth / typed buffer / structured buffer / raw buffer view を補助します。`D3D11State` は sampler / rasterizer / blend / depth-stencil state descriptor preset と state object 作成 helper を提供します。
 ---
 
 ## Copy / Resolve / Mipmap
@@ -207,6 +231,7 @@ sample/19_PresentationWindow    D3D11SwapChain window render-loop sample
 sample/20_ComputeBindingSet     compute-stage binding helper sample
 sample/21_Diagnostics           device lost / InfoQueue / GPU timer / profiler sample
 sample/22_CopyResolveMipmap     copy / resolve / mipmap helper sample
+sample/23_ViewState             advanced view / state helper sample
 ```
 
 ---
@@ -242,6 +267,8 @@ build_and_test.cmd
 - [`doc/D3D11Copy.md`](doc/D3D11Copy.md)
 - [`doc/D3D11Resolve.md`](doc/D3D11Resolve.md)
 - [`doc/D3D11Mipmap.md`](doc/D3D11Mipmap.md)
+- [`doc/D3D11View.md`](doc/D3D11View.md)
+- [`doc/D3D11State.md`](doc/D3D11State.md)
 - [`doc/D3D11Presentation.md`](doc/D3D11Presentation.md)
 - [`doc/D3D11Diagnostics.md`](doc/D3D11Diagnostics.md)
 - [`doc/D3D11GpuTimer.md`](doc/D3D11GpuTimer.md)

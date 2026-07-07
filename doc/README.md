@@ -2,7 +2,7 @@
 
 D3D11Helper は、Direct3D 11 の定型処理を薄くラップした C++17 ヘルパライブラリです。
 
-v1.1.0 でモジュール構成を整理し、v1.2.0 で GPU/CPU texture transfer、v1.3.0 で presentation helper、v1.4.0 で compute binding helper、v1.5.0 で diagnostics helper、v1.6.0 で copy / resolve / mipmap helper を追加しています。
+v1.1.0 でモジュール構成を整理し、v1.2.0 で GPU/CPU texture transfer、v1.3.0 で presentation helper、v1.4.0 で compute binding helper、v1.5.0 で diagnostics helper、v1.6.0 で copy / resolve / mipmap helper、v1.7.0 で advanced view / state helper を追加しています。
 
 ```text
 D3D11Foundation
@@ -25,12 +25,14 @@ D3D11Diagnostics
 | [`Architecture.md`](Architecture.md) | v1.1.0 以降のモジュール構成と依存方向 |
 | [`D3D11Foundation.md`](D3D11Foundation.md) | DirectX/DXGI-only の基礎 utility |
 | [`D3D11Core.md`](D3D11Core.md) | device / context facade |
-| [`D3D11Gpu.md`](D3D11Gpu.md) | resource / view / staging / pipeline / shader compiler / transfer / copy / resolve / mipmap / binding |
+| [`D3D11Gpu.md`](D3D11Gpu.md) | resource / view / state / staging / pipeline / shader compiler / transfer / copy / resolve / mipmap / binding |
 | [`D3D11BindingSet.md`](D3D11BindingSet.md) | compute-stage binding helper |
 | [`D3D11TextureTransfer.md`](D3D11TextureTransfer.md) | `Texture2D` と `D3D11CpuImage` 間の transfer |
 | [`D3D11Copy.md`](D3D11Copy.md) | D3D11 resource / texture / buffer copy helper |
 | [`D3D11Resolve.md`](D3D11Resolve.md) | MSAA `Texture2D` resolve helper |
 | [`D3D11Mipmap.md`](D3D11Mipmap.md) | automatic mip generation helper |
+| [`D3D11View.md`](D3D11View.md) | advanced Texture2D array / cube / depth / buffer view helper |
+| [`D3D11State.md`](D3D11State.md) | sampler / rasterizer / blend / depth-stencil state presets |
 | [`D3D11Framework.md`](D3D11Framework.md) | 旧 Framework パスの互換説明 |
 | [`D3D11Presentation.md`](D3D11Presentation.md) | render target / swapchain / resize / present helper |
 | [`D3D11Diagnostics.md`](D3D11Diagnostics.md) | debug layer / InfoQueue / device lost / GPU timer / profiler |
@@ -42,9 +44,11 @@ D3D11Diagnostics
 | [`ReleaseNotes_v1.4.0.md`](ReleaseNotes_v1.4.0.md) | v1.4.0 release notes |
 | [`ReleaseNotes_v1.5.0.md`](ReleaseNotes_v1.5.0.md) | v1.5.0 release notes |
 | [`ReleaseNotes_v1.6.0.md`](ReleaseNotes_v1.6.0.md) | v1.6.0 release notes |
+| [`ReleaseNotes_v1.7.0.md`](ReleaseNotes_v1.7.0.md) | v1.7.0 release notes |
 | [`MigrationGuide_v1.4.0.md`](MigrationGuide_v1.4.0.md) | v1.4.0 migration guide |
 | [`MigrationGuide_v1.5.0.md`](MigrationGuide_v1.5.0.md) | v1.5.0 migration guide |
 | [`MigrationGuide_v1.6.0.md`](MigrationGuide_v1.6.0.md) | v1.6.0 migration guide |
+| [`MigrationGuide_v1.7.0.md`](MigrationGuide_v1.7.0.md) | v1.7.0 migration guide |
 | [`../sample`](../sample) | サンプルコード |
 | [`../Test`](../Test) | テストコード |
 

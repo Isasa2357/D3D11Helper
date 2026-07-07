@@ -10,6 +10,67 @@ This project uses semantic versioning in the following style:
 
 ---
 
+## v1.7.0 - View / State helpers
+
+### Summary
+
+`v1.7.0` expands the `D3D11Gpu` module with advanced view creation helpers and reusable state descriptor presets.
+
+The implementation intentionally remains a Direct3D 11-native helper layer. It does not add a material system, render graph, descriptor heap abstraction, automatic resource lifetime management, or a high-level renderer.
+
+### Added
+
+- Added advanced view helpers:
+  - `D3D11Texture2DArrayViewDesc`
+  - `D3D11TextureCubeViewDesc`
+  - `D3D11TextureCubeArrayViewDesc`
+  - `D3D11BufferViewDesc`
+  - Texture2D array SRV / UAV / RTV / DSV creation helpers
+  - cube and cube-array SRV helpers
+  - depth texture DSV / SRV helpers
+  - depth/stencil format mapping helpers
+  - typed / structured / raw buffer SRV and UAV helpers
+- Added state helpers:
+  - sampler state creation
+  - rasterizer state creation
+  - blend state creation
+  - depth-stencil state creation
+  - `StatePresets` descriptor factories for common sampler, rasterizer, blend, and depth-stencil states
+- Added runtime tests:
+  - `Test/test_view_state.cpp`
+- Added console sample:
+  - `sample/23_ViewState`
+
+### Changed
+
+- `D3D11Gpu.hpp` now includes `D3D11View.hpp` and `D3D11State.hpp`.
+- `CMakeLists.txt` project version updated to `1.7.0`.
+
+### Supported scope
+
+The view / state helpers in `v1.7.0` focus on a safe baseline:
+
+- Texture2D array views
+- cube and cube-array shader resource views
+- typeless depth texture DSV/SRV format mapping
+- typed buffer views
+- structured buffer views
+- raw buffer views
+- common sampler, rasterizer, blend, and depth-stencil state presets
+
+### Non-goals
+
+The following remain out of scope for `v1.7.0`:
+
+- graphics-stage binding sets
+- material system or render graph integration
+- automatic resource lifetime management
+- descriptor heap style abstraction
+- texture3D-specific view helpers
+- video/planar format view abstraction
+- shader reflection based automatic binding
+
+---
 ## v1.6.0 - Copy / Resolve / Mipmap helpers
 
 ### Summary
