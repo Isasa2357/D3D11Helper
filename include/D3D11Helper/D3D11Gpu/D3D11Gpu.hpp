@@ -15,6 +15,7 @@
 #include <D3D11Helper/D3D11Gpu/D3D11View.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11State.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11ShaderCompiler.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11ShaderReflection.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11ComputePipeline.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11GraphicsPipeline.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11Helpers.hpp>
