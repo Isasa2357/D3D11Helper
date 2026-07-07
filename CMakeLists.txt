@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
-    VERSION 1.9.0
+    VERSION 1.9.1
     LANGUAGES CXX
 )
 
