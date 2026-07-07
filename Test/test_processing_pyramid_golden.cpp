@@ -165,10 +165,15 @@ int main() {
         desc.borderColor[3] = 0.0f;
         pyramid.DispatchDownsample2x(fx.core->GetImmediateContext(), src, dst, desc);
 
+        // Output order is row-major:
+        // (0,0): 4 valid source pixels -> alpha 255
+        // (1,0): 2 valid + 2 border samples -> alpha 128
+        // (0,1): 2 valid + 2 border samples -> alpha 128
+        // (1,1): 1 valid + 3 border samples -> alpha 64
         const std::vector<uint8_t> expected = {
             30, 30, 30, 255,
-            22, 22, 22,  64,
-            37, 37, 37,  64,
+            22, 22, 22, 128,
+            37, 37, 37, 128,
             22, 22, 22,  64,
         };
         RequireBytesNear(ReadbackRgba8(*fx.core, dst), expected, 2, "pyramid downsample 3x3 constant");
