@@ -1,4 +1,4 @@
-﻿# D3D11Helper
+# D3D11Helper
 
 **Direct3D 11** の定型処理を薄くラップした **C++17 ヘルパライブラリ**です。
 
@@ -17,6 +17,17 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer 
 旧 `D3D11Framework/*` および一部の旧 `D3D11Core/*` ヘッダは、v1.x 互換のため wrapper として残しています。新規コードでは、上記の新モジュールパスを使うことを推奨します。
 
 > 姉妹プロジェクト [D3D12Helper](https://github.com/Isasa2357/D3D12Helper) と、細部の API ではなく「提供する機能カテゴリ」と「モジュール構成」が揃うことを目標にしています。
+
+---
+
+## Release notes
+
+### v1.11.1 - CMake standalone hardening
+
+- `sample/` 単体から `cmake -S sample -B ...` できる standalone configure fallback を追加。
+- `Test/` 単体から `cmake -S Test -B ...` できる standalone configure fallback を追加。
+- root からの通常ビルドでは既存の `D3D11Helper::D3D11Helper` target を使い続けるため、従来のビルド経路は維持。
+- `CMakeLists.txt` の project version を `1.11.1` に更新。
 
 ---
 
