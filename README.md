@@ -38,7 +38,7 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer 
 - **D3D11Gpu** — buffer / texture / view / state / sampler / shader compiler / compute pipeline / graphics pipeline / staging / CPU transfer / copy / resolve / mipmap / binding helper を提供。
 - **D3D11Presentation** — offscreen render target、window swapchain、backbuffer RTV、optional depth/stencil、viewport、clear、present、resize を提供。
 - **D3D11Diagnostics** — Debug Layer、InfoQueue、LiveObject report、device lost 判定、GPU timestamp timer、single-frame GPU profiler を提供。
-- **D3D11Processing** — GPU 上で format conversion、resize、remap、composite、blur、region effect、mask、threshold、pyramid、fused pipeline などを実行。
+- **D3D11Processing** — GPU 上で format conversion、resize、remap、composite、blur、region effect、mask、threshold、pyramid、fused pipeline などを実行。単体 C++ processor はショートカットであり、実務的な連続処理は `shaders/D3D11Processing/*.hlsli` を include した独自 fused HLSL として 1 dispatch にまとめる方針。
 - **D3D11Interop** — owned shared handle、shared Texture2D、keyed mutex、D3D11.4 Fence support check、D3D11/D3D12 interop 向け同期補助を提供。
 - **D3D12Helper と対称的な設計** — D3D11 固有の自然な API を保ちつつ、モジュールと機能カテゴリを合わせる。
 
@@ -53,6 +53,14 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer 
 #include <D3D11Helper/D3D11Diagnostics/D3D11Diagnostics.hpp>
 #include <D3D11Helper/D3D11Processing/D3D11Processing.hpp>
 ```
+
+---
+
+## Processing の考え方
+
+`D3D11FormatConverter` や `D3D11Resizer` は、Processing Layer の単体機能をすぐ使うためのショートカットです。Processing Layer の本体は、HLSL 関数ライブラリ、format / plane view 作成、constant buffer、validation、compute pipeline 実行基盤を含むレイヤーです。
+
+複数処理が連続する実アプリでは、ショートカットを何回も呼ぶより、`ProcessingCommon.hlsli` や `ColorSpace.hlsli` を include して、アプリ側の fused shader にまとめることを推奨します。例: `sample/25_ProcessingCustomFusedShader`。
 
 ---
 
@@ -280,7 +288,8 @@ sample/20_ComputeBindingSet     compute-stage binding helper sample
 sample/21_Diagnostics           device lost / InfoQueue / GPU timer / profiler sample
 sample/22_CopyResolveMipmap     copy / resolve / mipmap helper sample
 sample/23_ViewState             advanced view / state helper sample
-sample/24_Interop              shared texture / keyed mutex / fence interop sample
+sample/24_Interop               shared texture / keyed mutex / fence interop sample
+sample/25_ProcessingCustomFusedShader  HLSL library based custom fused Processing sample
 ```
 
 ---
@@ -322,6 +331,7 @@ build_and_test.cmd
 - [`doc/D3D11Diagnostics.md`](doc/D3D11Diagnostics.md)
 - [`doc/D3D11GpuTimer.md`](doc/D3D11GpuTimer.md)
 - [`doc/D3D11GpuProfiler.md`](doc/D3D11GpuProfiler.md)
+- [`doc/D3D11Processing.md`](doc/D3D11Processing.md)
 - [`doc/Patterns.md`](doc/Patterns.md)
 - [`CHANGELOG.md`](CHANGELOG.md)
 
