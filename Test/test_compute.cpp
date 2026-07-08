@@ -1,8 +1,36 @@
-﻿#include "TestUtil.hpp"
+#include "TestUtil.hpp"
 #include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
 #include <cstdint>
+#include <functional>
+#include <stdexcept>
+#include <string>
 #include <vector>
 using namespace D3D11CoreLib;
+
+namespace {
+
+void ExpectThrows(const char* label, const std::function<void()>& fn) {
+    bool threw = false;
+    try {
+        fn();
+    } catch (...) {
+        threw = true;
+    }
+    if (!threw) {
+        throw std::runtime_error(std::string(label) + " did not throw");
+    }
+}
+
+const char* kTinyCs = R"(RWStructuredBuffer<uint> Buf : register(u0);
+[numthreads(1,1,1)]void CSMain(uint3 id:SV_DispatchThreadID){ Buf[0] = 7; })";
+
+ComPtr<ID3D11ComputeShader> GetBoundComputeShader(ID3D11DeviceContext* ctx) {
+    ComPtr<ID3D11ComputeShader> shader;
+    ctx->CSGetShader(&shader, nullptr, nullptr);
+    return shader;
+}
+
+} // namespace
 
 int main() {
     auto core = TestUtil::MakeCore();
@@ -15,6 +43,40 @@ int main() {
         auto bc = CompileShaderFromSource_D3DCompile(cs, "CSMain", "cs_5_0");
         D3D11ComputePipeline p; p.Initialize(dev, bc);
         if (!p.GetShader()) throw std::runtime_error("null");
+    });
+
+    TEST_RUN("ComputePipeline invalid initialization", {
+        auto bc = CompileShaderFromSource_D3DCompile(kTinyCs, "CSMain", "cs_5_0");
+        ShaderBytecode empty;
+        D3D11ComputePipeline p;
+        ExpectThrows("null device", [&] { p.Initialize(nullptr, bc); });
+        ExpectThrows("empty shader", [&] { p.Initialize(dev, empty); });
+    });
+
+    TEST_RUN("ComputePipeline bind and unbind state", {
+        auto bc = CompileShaderFromSource_D3DCompile(kTinyCs, "CSMain", "cs_5_0");
+        D3D11ComputePipeline p;
+
+        p.Bind(nullptr);
+        p.Unbind(nullptr);
+        p.Bind(ctx); // uninitialized bind is intentionally a no-op.
+        if (GetBoundComputeShader(ctx).Get() != nullptr) throw std::runtime_error("uninitialized bind should not set CS");
+
+        p.Initialize(dev, bc);
+        p.Bind(ctx);
+        if (GetBoundComputeShader(ctx).Get() != p.GetShader()) throw std::runtime_error("bound CS mismatch");
+        p.Unbind(ctx);
+        if (GetBoundComputeShader(ctx).Get() != nullptr) throw std::runtime_error("CS should be unbound");
+    });
+
+    TEST_RUN("ComputePipeline dispatch rejects invalid state", {
+        auto bc = CompileShaderFromSource_D3DCompile(kTinyCs, "CSMain", "cs_5_0");
+        D3D11ComputePipeline uninitialized;
+        ExpectThrows("uninitialized dispatch", [&] { uninitialized.Dispatch(ctx, 1, 1, 1); });
+
+        D3D11ComputePipeline initialized;
+        initialized.Initialize(dev, bc);
+        ExpectThrows("null context dispatch", [&] { initialized.Dispatch(nullptr, 1, 1, 1); });
     });
 
     TEST_RUN("ComputePipeline GPU execution + readback", {
@@ -42,14 +104,16 @@ RWStructuredBuffer<uint> Buf : register(u0);
         ID3D11UnorderedAccessView* uavs[]={uav.Get()};
         ctx->CSSetUnorderedAccessViews(0,1,uavs,nullptr);
         pipeline.Dispatch(ctx, 1, 1, 1);
+        if (GetBoundComputeShader(ctx).Get() != nullptr) throw std::runtime_error("Dispatch should unbind compute shader");
         ID3D11UnorderedAccessView* n[]={nullptr}; ctx->CSSetUnorderedAccessViews(0,1,n,nullptr);
 
         D3D11StagingBuffer st; st.InitializeAsBuffer(dev, N*4);
         ctx->CopyResource(st.Get(), buf.Get());
         auto* r = static_cast<const uint32_t*>(st.Map(ctx));
         int err=0; for (UINT i=0;i<N;++i) if (r[i]!=i+10) ++err;
+        const uint32_t first = r[0];
         st.Unmap(ctx);
-        TestUtil::Log("  r[0]=" + std::to_string(r?r[0]:0) + " errors=" + std::to_string(err));
+        TestUtil::Log("  r[0]=" + std::to_string(first) + " errors=" + std::to_string(err));
         if (err) throw std::runtime_error(std::to_string(err) + " mismatches");
     });
 
