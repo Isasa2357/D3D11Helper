@@ -150,6 +150,7 @@ add_d3d11_test(test_swap_chain         test_swap_chain.cpp         90)
 add_d3d11_test(test_integration        test_integration.cpp        90)
 add_d3d11_test(test_multithread        test_multithread.cpp        90)
 add_d3d11_test(test_diagnostics        test_diagnostics.cpp        90)
+add_d3d11_test(test_coverage_hardening test_coverage_hardening.cpp 120)
 
 option(D3D11HELPER_ENABLE_D3D12_INTEROP_TESTS "Build optional D3D11/D3D12 interop E2E tests" OFF)
 set(D3D11HELPER_D3D12HELPER_GIT_REPOSITORY "https://github.com/Isasa2357/D3D12Helper.git" CACHE STRING "D3D12Helper git repository for optional interop tests")
