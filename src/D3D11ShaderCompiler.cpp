@@ -66,6 +66,88 @@ UINT MakeCompileFlags() {
     return flags;
 }
 
+bool IsPixelShaderTarget(const std::string& target) {
+    return target.rfind("ps_", 0) == 0;
+}
+
+bool IsTokenChar(char c) {
+    return (c >= 'A' && c <= 'Z') ||
+           (c >= 'a' && c <= 'z') ||
+           (c >= '0' && c <= '9') ||
+           c == '_';
+}
+
+bool IsTokenAt(const std::string& text, std::size_t pos, const char* token) {
+    const std::size_t tokenLen = std::strlen(token);
+    if (pos + tokenLen > text.size()) {
+        return false;
+    }
+    if (text.compare(pos, tokenLen, token) != 0) {
+        return false;
+    }
+    const bool beforeOk = pos == 0 || !IsTokenChar(text[pos - 1]);
+    const bool afterOk = pos + tokenLen >= text.size() || !IsTokenChar(text[pos + tokenLen]);
+    return beforeOk && afterOk;
+}
+
+bool LooksLikeLegacyTexcoordPixelMain(const std::string& source) {
+    // Detect the old one-parameter pixel entry shape:
+    //     float4 main(float2 uv : TEXCOORD0) : SV_TARGET
+    // With some D3D11/D3D12 paths, a standalone TEXCOORD parameter can be assigned
+    // to a hardware register that does not match the VS output register. D3D11 may
+    // then draw with a constant UV instead of failing loudly.
+    std::size_t pos = 0;
+    while ((pos = source.find("main", pos)) != std::string::npos) {
+        if (!IsTokenAt(source, pos, "main")) {
+            pos += 4;
+            continue;
+        }
+        const std::size_t open = source.find('(', pos + 4);
+        if (open == std::string::npos || open - pos > 64) {
+            pos += 4;
+            continue;
+        }
+        const std::size_t close = source.find(')', open + 1);
+        if (close == std::string::npos) {
+            return false;
+        }
+        const std::string params = source.substr(open + 1, close - open - 1);
+        if (params.find(',') == std::string::npos &&
+            params.find("float2") != std::string::npos &&
+            params.find("TEXCOORD") != std::string::npos) {
+            return true;
+        }
+        pos = close + 1;
+    }
+    return false;
+}
+
+std::string WrapLegacyTexcoordPixelShader(const std::string& hlslSource,
+                                          const std::string& target) {
+    if (!IsPixelShaderTarget(target)) {
+        return hlslSource;
+    }
+    if (!LooksLikeLegacyTexcoordPixelMain(hlslSource)) {
+        return hlslSource;
+    }
+
+    std::ostringstream oss;
+    oss << "// D3D11Helper compatibility wrapper for legacy PS main(float2 uv : TEXCOORD0).\n";
+    oss << "#define main D3D11Helper_LegacyPixelMain\n";
+    oss << hlslSource << "\n";
+    oss << "#undef main\n";
+    oss << "struct D3D11Helper_LegacyPSInput\n";
+    oss << "{\n";
+    oss << "    float4 position : SV_POSITION;\n";
+    oss << "    float2 uv : TEXCOORD0;\n";
+    oss << "};\n";
+    oss << "float4 main(D3D11Helper_LegacyPSInput input) : SV_TARGET\n";
+    oss << "{\n";
+    oss << "    return D3D11Helper_LegacyPixelMain(input.uv);\n";
+    oss << "}\n";
+    return oss.str();
+}
+
 std::vector<D3D_SHADER_MACRO> MakeD3DCompileMacros(const std::vector<ShaderMacro>& defines) {
     std::vector<D3D_SHADER_MACRO> macros;
     macros.reserve(defines.size() + 1);
@@ -148,11 +230,13 @@ ShaderBytecode CompileD3DCompileInternal(
     if (entryPoint.empty()) throw std::runtime_error("D3DCompile: empty entry point");
     if (target.empty()) throw std::runtime_error("D3DCompile: empty target");
 
+    const std::string sourceToCompile = WrapLegacyTexcoordPixelShader(hlslSource, target);
+
     ComPtr<ID3DBlob> blob;
     ComPtr<ID3DBlob> errors;
     const HRESULT hr = D3DCompile(
-        hlslSource.data(),
-        hlslSource.size(),
+        sourceToCompile.data(),
+        sourceToCompile.size(),
         sourceName.c_str(),
         macros,
         includeHandler,
