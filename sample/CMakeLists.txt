@@ -1,5 +1,8 @@
-﻿#
-# sample/CMakeLists.txt
+#
+# D3D11Helper sample CMake
+#
+# Normally this file is entered from the repository root CMakeLists.txt.
+# It also supports standalone configuration from sample/.
 #
 # The sample executables share the same runtime output directory for a given
 # configuration, for example:
@@ -11,6 +14,48 @@
 # of them can fail with MSB3073. Copy those shared assets once through a single
 # target, then make every sample depend on it.
 #
+
+cmake_minimum_required(VERSION 3.20)
+
+if(NOT TARGET D3D11Helper)
+    project(D3D11HelperSamples LANGUAGES CXX)
+
+    if(NOT WIN32)
+        message(FATAL_ERROR "D3D11Helper samples are Windows-only.")
+    endif()
+
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+
+    get_filename_component(D3D11HELPER_REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
+    list(APPEND CMAKE_MODULE_PATH "${D3D11HELPER_REPO_ROOT}/cmake")
+    include(D3D11HelperDxcRuntime)
+
+    set(D3D11HELPER_ROOT_INCLUDE_DIR "${D3D11HELPER_REPO_ROOT}/include")
+    set(D3D11HELPER_SOURCE_DIR       "${D3D11HELPER_REPO_ROOT}/src")
+
+    file(GLOB D3D11HELPER_SOURCES CONFIGURE_DEPENDS
+        "${D3D11HELPER_SOURCE_DIR}/*.cpp"
+    )
+
+    add_library(D3D11Helper STATIC ${D3D11HELPER_SOURCES})
+    add_library(D3D11Helper::D3D11Helper ALIAS D3D11Helper)
+
+    target_include_directories(D3D11Helper
+        PUBLIC
+            "${D3D11HELPER_ROOT_INCLUDE_DIR}"
+    )
+
+    target_compile_definitions(D3D11Helper PUBLIC WIN32_LEAN_AND_MEAN NOMINMAX)
+    target_link_libraries(D3D11Helper PUBLIC d3d11 dxgi dxguid d3dcompiler dxcompiler user32)
+
+    if(MSVC)
+        target_compile_options(D3D11Helper PUBLIC /utf-8 /EHsc)
+    endif()
+else()
+    get_filename_component(D3D11HELPER_REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/.." ABSOLUTE)
+endif()
 
 set(D3D11HELPER_SAMPLE_RUNTIME_ASSETS_TARGET D3D11HelperSampleRuntimeAssets)
 
