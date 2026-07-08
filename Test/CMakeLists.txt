@@ -188,6 +188,7 @@ set(D3D11HELPER_HARNESS_TEST_SOURCES
     test_ProcessingPyramid.cpp
     test_ProcessingPyramidBlur.cpp
     test_ProcessingPyramidRegionBlur.cpp
+    test_AdvancedProcessing.cpp
 )
 
 add_executable(d3d11helper_tests ${D3D11HELPER_HARNESS_TEST_SOURCES})
@@ -218,6 +219,7 @@ set(D3D11HELPER_HARNESS_TEST_SUITES
     ProcessingPyramid
     ProcessingPyramidBlur
     ProcessingPyramidRegionBlur
+    AdvancedProcessing
 )
 
 foreach(suite IN LISTS D3D11HELPER_HARNESS_TEST_SUITES)

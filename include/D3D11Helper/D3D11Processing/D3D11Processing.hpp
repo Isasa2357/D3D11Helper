@@ -21,3 +21,4 @@
 #include <D3D11Helper/D3D11Processing/D3D11PyramidBlur.hpp>
 #include <D3D11Helper/D3D11Processing/D3D11PyramidRegionBlur.hpp>
 #include <D3D11Helper/D3D11Processing/D3D11FusedPipeline.hpp>
+#include <D3D11Helper/D3D11Processing/D3D11AdvancedProcessing.hpp>
