@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(D3D11Helper
-    VERSION 1.11.1
+    VERSION 1.12.0
     LANGUAGES CXX
 )
 
@@ -98,6 +98,7 @@ set(D3D11HELPER_SOURCES
     src/D3D11PyramidBlur.cpp
     src/D3D11PyramidRegionBlur.cpp
     src/D3D11FusedPipeline.cpp
+    src/D3D11AdvancedProcessing.cpp
 )
 
 # v1.1.0+ module layout:
@@ -200,6 +201,7 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Processing/D3D11PyramidBlur.hpp
     include/D3D11Helper/D3D11Processing/D3D11PyramidRegionBlur.hpp
     include/D3D11Helper/D3D11Processing/D3D11FusedPipeline.hpp
+    include/D3D11Helper/D3D11Processing/D3D11AdvancedProcessing.hpp
 )
 
 add_library(D3D11Helper STATIC ${D3D11HELPER_SOURCES} ${D3D11HELPER_PUBLIC_HEADERS})
