@@ -75,7 +75,9 @@ int main() {
         ctx->CopyResource(st.Get(), tex.Get());
         auto mapped = st.MapScoped(ctx);
         if (mapped.RowPitch() < W * 4u) throw std::runtime_error("invalid row pitch");
-        if (mapped.DepthPitch() < mapped.RowPitch() * H) throw std::runtime_error("invalid depth pitch");
+        if (mapped.RowPitch() != st.GetMappedRowPitch() ||
+            mapped.DepthPitch() != st.GetMappedDepthPitch())
+            throw std::runtime_error("mapped pitch accessor mismatch");
         if (mapped.DataAs<uint8_t>()[0] != 17u) throw std::runtime_error("texture data mismatch");
     });
     TEST_RUN("Scoped map move transfers unmap ownership", {
