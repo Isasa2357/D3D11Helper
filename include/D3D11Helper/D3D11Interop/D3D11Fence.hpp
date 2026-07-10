@@ -1,82 +1,84 @@
 #pragma once
 //
 // D3D11Fence.hpp
-// ID3D11Fence ラッパ（D3D11.4 / D3D12 相互運用向け）。
-//
-// D3D12 の D3D12Fence に相当するが、D3D11 では GPU 同期の主手段は Flush() と
-// ID3D11Query(EVENT) である。このクラスは D3D11/D3D12 相互運用（SharedResource 経由の
-// Fence 同期）に使う。ID3D11Device5 が取得できない環境では Initialize が例外を投げる。
-//
-// HANDLE を所有するため move-only。
-//
-// This header belongs to D3D11Interop in the v1.1.0 architecture.
-// The legacy path D3D11Core/D3D11Fence.hpp remains as a compatibility wrapper.
+// ID3D11Fence wrapper for D3D11.4 / D3D12 interop.
 //
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 #include <D3D11Helper/D3D11Interop/D3D11SharedHandle.hpp>
 
+#include <utility>
+
 namespace D3D11CoreLib {
+
+class D3D11Fence;
+
+class D3D11FencePoint {
+public:
+    D3D11FencePoint() noexcept = default;
+
+    ID3D11Fence* GetFence() const noexcept { return m_fence.Get(); }
+    UINT64 GetValue() const noexcept { return m_value; }
+    bool IsValid() const noexcept { return m_fence != nullptr; }
+    explicit operator bool() const noexcept { return IsValid(); }
+
+    bool IsComplete() const noexcept;
+    void CpuWait() const;
+
+private:
+    friend class D3D11Fence;
+
+    D3D11FencePoint(ComPtr<ID3D11Fence> fence, UINT64 value) noexcept
+        : m_fence(std::move(fence)), m_value(value) {}
+
+    ComPtr<ID3D11Fence> m_fence;
+    UINT64 m_value = 0;
+};
 
 class D3D11Fence {
 public:
     D3D11Fence() = default;
     ~D3D11Fence();
 
-    D3D11Fence(const D3D11Fence&)            = delete;
+    D3D11Fence(const D3D11Fence&) = delete;
     D3D11Fence& operator=(const D3D11Fence&) = delete;
     D3D11Fence(D3D11Fence&& other) noexcept;
     D3D11Fence& operator=(D3D11Fence&& other) noexcept;
 
-    // D3D11.4 の ID3D11Fence を作成する。
-    void Initialize(ID3D11Device5* device5,
-                    D3D11_FENCE_FLAG flags = D3D11_FENCE_FLAG_SHARED);
+    void Initialize(
+        ID3D11Device5* device5,
+        D3D11_FENCE_FLAG flags = D3D11_FENCE_FLAG_SHARED);
+    void Initialize(
+        ID3D11Device* device,
+        D3D11_FENCE_FLAG flags = D3D11_FENCE_FLAG_SHARED);
 
-    // Convenience overload. Internally queries ID3D11Device5 and throws if unavailable.
-    void Initialize(ID3D11Device* device,
-                    D3D11_FENCE_FLAG flags = D3D11_FENCE_FLAG_SHARED);
-
-    // 共有ハンドルからオープンする（D3D12 の Fence と同期する場合）。
     void OpenSharedHandle(ID3D11Device5* device5, HANDLE sharedHandle);
     void OpenSharedHandle(ID3D11Device* device, HANDLE sharedHandle);
     void OpenSharedHandle(ID3D11Device5* device5, const D3D11SharedHandle& sharedHandle);
     void OpenSharedHandle(ID3D11Device* device, const D3D11SharedHandle& sharedHandle);
 
-    // GPU に Signal をキューイングする。
     void Signal(ID3D11DeviceContext4* ctx, UINT64 value);
     void Signal(ID3D11DeviceContext* ctx, UINT64 value);
 
-    // GPU 側で Fence 値を待つ。
-    //
-    // 注意（重要）: D3D11 の Immediate Context は単一の GPU タイムラインしか持たない。
-    // 同じコンテキストに対して GpuWait(N) を積んだ「後」に、その値を満たす Signal(N) を
-    // 積んでも、GPU はコマンドを投入順に処理するため GpuWait で永久に停止し、
-    // 後続の Signal に到達できない（自己デッドロック）。
-    // GpuWait は「別のデバイス/コンテキストが将来 Signal する値」を待つ用途で使うこと
-    // （例: D3D12 との相互運用、または複数の D3D11Core 間での同期）。
-    //
-    // また、WARP（ソフトウェアアダプタ）では Fence の Wait/Signal がハードウェアほど
-    // 安定して動作しない場合がある。WARP を使う可能性がある場合は、GpuWait に依存せず
-    // Signal + CpuWait による CPU 側同期を優先することを推奨する。
+    D3D11FencePoint SignalPoint(ID3D11DeviceContext* ctx, UINT64 value);
+
     void GpuWait(ID3D11DeviceContext4* ctx, UINT64 value);
     void GpuWait(ID3D11DeviceContext* ctx, UINT64 value);
+    void GpuWaitPoint(ID3D11DeviceContext* ctx, const D3D11FencePoint& point);
 
-    // CPU 側で Fence 値の完了をブロック待ちする。
     void CpuWait(UINT64 value);
 
-    // Fence の共有ハンドルを作成する（D3D12 側でオープンするため）。
-    // Raw HANDLE is returned for compatibility. Caller owns it and must CloseHandle.
     HANDLE CreateSharedHandle() const;
     D3D11SharedHandle CreateSharedHandleOwned() const;
 
-    UINT64       GetCompletedValue() const;
+    UINT64 GetCompletedValue() const;
     ID3D11Fence* Get() const noexcept { return m_fence.Get(); }
-    bool         IsInitialized() const noexcept { return m_fence != nullptr; }
+    bool IsInitialized() const noexcept { return m_fence != nullptr; }
 
 private:
     void Destroy() noexcept;
 
     ComPtr<ID3D11Fence> m_fence;
-    HANDLE              m_event = nullptr;
+    HANDLE m_event = nullptr;
 };
 
 } // namespace D3D11CoreLib
