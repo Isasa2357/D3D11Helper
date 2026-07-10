@@ -43,6 +43,8 @@ Existing shader filenames, C++ public APIs, constant-buffer layout, and resource
 
 `ColorSpace.hlsli` is intentionally unchanged. Existing application shaders that call `DecodeYuv` or `EncodeYuv` retain their previous numeric behavior. New format-aware shaders should include `YuvPrimitives.hlsli` and pass `SrcFormat` or `DstFormat` explicitly.
 
+The first Windows validation run exposed that `matrix` is parsed as a type keyword by the D3DCompile / Shader Model 5 path. Function parameter names were changed to `colorMatrix`; function names, argument order, and numeric behavior were not changed.
+
 ## Tests
 
 The phase test covers:
@@ -56,3 +58,5 @@ The phase test covers:
 - actual RGBA red to P010 high-bit plane words.
 
 NV12/P010 storage tests are skipped on devices that do not expose the required planar UAV support.
+
+After the D3DCompile compatibility correction, the user Windows environment completed Debug and Release builds, focused tests, the full CTest suite, and the custom fused sample in both configurations. Phase 1 is complete.
