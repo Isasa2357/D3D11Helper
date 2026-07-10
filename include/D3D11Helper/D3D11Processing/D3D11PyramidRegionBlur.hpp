@@ -23,6 +23,16 @@ struct D3D11PyramidRegionBlurWorkspace {
     D3D11Resource blurred;
 };
 
+struct D3D11PyramidRegionBlurWorkspaceView {
+    UINT sourceWidth = 0;
+    UINT sourceHeight = 0;
+    UINT levels = 0;
+    DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
+
+    D3D11PyramidBlurWorkspaceView blurWorkspace;
+    D3D11ResourceView blurred;
+};
+
 class D3D11PyramidRegionBlur {
 public:
     D3D11PyramidRegionBlur();
@@ -53,6 +63,13 @@ public:
         D3D11Resource& src,
         D3D11PyramidRegionBlurWorkspace& workspace,
         D3D11Resource& dst,
+        const PyramidRegionBlurDesc& desc);
+
+    void DispatchPyramidRegionBlurView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        const D3D11PyramidRegionBlurWorkspaceView& workspace,
+        D3D11ResourceView dst,
         const PyramidRegionBlurDesc& desc);
 
 private:
