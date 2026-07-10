@@ -6,10 +6,9 @@
 // Reusable, format-aware YUV helpers for application-owned fused shaders.
 //
 // NV12 plane views expose 8-bit codes as R8/R8G8 UNORM samples.
-// P010 plane views expose the 16-bit storage words as R16/R16G16 UNORM;
-// the 10-bit video code is stored in the most-significant bits (code << 6).
-// These helpers convert through integer video-code space so NV12 and P010 use
-// the same color equations without treating a P010 sample as ordinary R16.
+// P010 plane views expose 16-bit storage words as R16/R16G16 UNORM; the
+// 10-bit video code occupies bits 15:6. Conversion therefore goes through
+// integer video-code space rather than treating P010 as ordinary R16 color.
 
 float D3D11YuvCodeMaximum(uint format)
 {
@@ -30,7 +29,6 @@ float D3D11YuvSampleToCode(float sampleValue, uint format)
 {
     sampleValue = saturate(sampleValue);
     if (format == DXGI_FORMAT_P010_VALUE) {
-        // Recover the 10-bit code stored in bits 15:6.
         return clamp(floor(sampleValue * 65535.0f / 64.0f + 0.5f), 0.0f, 1023.0f);
     }
     return clamp(floor(sampleValue * 255.0f + 0.5f), 0.0f, 255.0f);
@@ -75,41 +73,40 @@ float3 D3D11YuvCodeToSample(float3 codeValue, uint format)
         D3D11YuvCodeToSample(codeValue.z, format));
 }
 
-float3 D3D11YuvToRgbSignal(float y, float u, float v, uint matrix)
+float3 D3D11YuvToRgbSignal(float y, float u, float v, uint colorMatrix)
 {
-    if (matrix == PROCESSING_MATRIX_BT601) {
+    if (colorMatrix == PROCESSING_MATRIX_BT601) {
         return float3(
             y + 1.402000f * v,
             y - 0.344136f * u - 0.714136f * v,
             y + 1.772000f * u);
     }
-    if (matrix == PROCESSING_MATRIX_BT2020) {
+    if (colorMatrix == PROCESSING_MATRIX_BT2020) {
         return float3(
             y + 1.474600f * v,
             y - 0.164553f * u - 0.571353f * v,
             y + 1.881400f * u);
     }
 
-    // Identity is intentionally treated as BT.709 for YUV input, preserving
-    // the Processing layer's historical fallback behavior.
+    // Identity intentionally follows the historical BT.709 fallback.
     return float3(
         y + 1.574800f * v,
         y - 0.187324f * u - 0.468124f * v,
         y + 1.855600f * u);
 }
 
-float3 D3D11RgbToYuvSignal(float3 rgb, uint matrix)
+float3 D3D11RgbToYuvSignal(float3 rgb, uint colorMatrix)
 {
     rgb = saturate(rgb);
 
     float y;
     float u;
     float v;
-    if (matrix == PROCESSING_MATRIX_BT601) {
+    if (colorMatrix == PROCESSING_MATRIX_BT601) {
         y = dot(rgb, float3(0.299000f, 0.587000f, 0.114000f));
         u = (rgb.b - y) / 1.772000f;
         v = (rgb.r - y) / 1.402000f;
-    } else if (matrix == PROCESSING_MATRIX_BT2020) {
+    } else if (colorMatrix == PROCESSING_MATRIX_BT2020) {
         y = dot(rgb, float3(0.262700f, 0.678000f, 0.059300f));
         u = (rgb.b - y) / 1.881400f;
         v = (rgb.r - y) / 1.474600f;
@@ -121,10 +118,14 @@ float3 D3D11RgbToYuvSignal(float3 rgb, uint matrix)
     return float3(y, u, v);
 }
 
-float3 D3D11DecodeYuvCode(float3 yuvCode, uint format, uint range, uint matrix)
+float3 D3D11DecodeYuvCode(
+    float3 yuvCode,
+    uint format,
+    uint range,
+    uint colorMatrix)
 {
-    const float scale = D3D11YuvEightBitScale(format);
-    const float maxCode = D3D11YuvCodeMaximum(format);
+    float scale = D3D11YuvEightBitScale(format);
+    float maxCode = D3D11YuvCodeMaximum(format);
 
     float y;
     float u;
@@ -139,7 +140,7 @@ float3 D3D11DecodeYuvCode(float3 yuvCode, uint format, uint range, uint matrix)
         v = (yuvCode.z - D3D11YuvChromaCenterCode(format)) / maxCode;
     }
 
-    return saturate(D3D11YuvToRgbSignal(y, u, v, matrix));
+    return saturate(D3D11YuvToRgbSignal(y, u, v, colorMatrix));
 }
 
 float3 D3D11DecodeYuvSample(
@@ -147,19 +148,23 @@ float3 D3D11DecodeYuvSample(
     float2 uvSample,
     uint format,
     uint range,
-    uint matrix)
+    uint colorMatrix)
 {
-    const float3 code = float3(
+    float3 code = float3(
         D3D11YuvSampleToCode(ySample, format),
         D3D11YuvSampleToCode(uvSample, format));
-    return D3D11DecodeYuvCode(code, format, range, matrix);
+    return D3D11DecodeYuvCode(code, format, range, colorMatrix);
 }
 
-float3 D3D11EncodeRgbToYuvCode(float3 rgb, uint format, uint range, uint matrix)
+float3 D3D11EncodeRgbToYuvCode(
+    float3 rgb,
+    uint format,
+    uint range,
+    uint colorMatrix)
 {
-    const float3 signal = D3D11RgbToYuvSignal(rgb, matrix);
-    const float scale = D3D11YuvEightBitScale(format);
-    const float maxCode = D3D11YuvCodeMaximum(format);
+    float3 signal = D3D11RgbToYuvSignal(rgb, colorMatrix);
+    float scale = D3D11YuvEightBitScale(format);
+    float maxCode = D3D11YuvCodeMaximum(format);
 
     float3 code;
     if (range == PROCESSING_RANGE_LIMITED) {
@@ -178,10 +183,14 @@ float3 D3D11EncodeRgbToYuvCode(float3 rgb, uint format, uint range, uint matrix)
     return floor(code + 0.5f);
 }
 
-float3 D3D11EncodeRgbToYuvSample(float3 rgb, uint format, uint range, uint matrix)
+float3 D3D11EncodeRgbToYuvSample(
+    float3 rgb,
+    uint format,
+    uint range,
+    uint colorMatrix)
 {
     return D3D11YuvCodeToSample(
-        D3D11EncodeRgbToYuvCode(rgb, format, range, matrix),
+        D3D11EncodeRgbToYuvCode(rgb, format, range, colorMatrix),
         format);
 }
 
@@ -191,11 +200,11 @@ float3 D3D11LoadYuv420Rgb(
     uint2 absoluteLumaPixel,
     uint format,
     uint range,
-    uint matrix)
+    uint colorMatrix)
 {
-    const float y = yPlane.Load(LoadCoord(absoluteLumaPixel));
-    const float2 uv = uvPlane.Load(LoadCoord(absoluteLumaPixel / 2u));
-    return D3D11DecodeYuvSample(y, uv, format, range, matrix);
+    float y = yPlane.Load(LoadCoord(absoluteLumaPixel));
+    float2 uv = uvPlane.Load(LoadCoord(absoluteLumaPixel / 2u));
+    return D3D11DecodeYuvSample(y, uv, format, range, colorMatrix);
 }
 
 float2 D3D11ResizeSourcePosition(uint2 destinationLocalPixel, float2 scale)
@@ -217,17 +226,17 @@ float3 D3D11SampleYuv420RgbPoint(
     float2 scale,
     uint format,
     uint range,
-    uint matrix)
+    uint colorMatrix)
 {
-    const float2 sourcePosition = D3D11ResizeSourcePosition(destinationLocalPixel, scale);
-    const int2 localPixel = D3D11ClampPixel(int2(round(sourcePosition)), sourceSize);
+    float2 sourcePosition = D3D11ResizeSourcePosition(destinationLocalPixel, scale);
+    int2 localPixel = D3D11ClampPixel(int2(round(sourcePosition)), sourceSize);
     return D3D11LoadYuv420Rgb(
         yPlane,
         uvPlane,
         sourceOrigin + uint2(localPixel),
         format,
         range,
-        matrix);
+        colorMatrix);
 }
 
 float3 D3D11SampleYuv420RgbLinear(
@@ -239,23 +248,23 @@ float3 D3D11SampleYuv420RgbLinear(
     float2 scale,
     uint format,
     uint range,
-    uint matrix)
+    uint colorMatrix)
 {
-    const float2 sourcePosition = D3D11ResizeSourcePosition(destinationLocalPixel, scale);
-    const float2 basePosition = floor(sourcePosition);
-    const float2 fraction = sourcePosition - basePosition;
+    float2 sourcePosition = D3D11ResizeSourcePosition(destinationLocalPixel, scale);
+    float2 basePosition = floor(sourcePosition);
+    float2 fraction = sourcePosition - basePosition;
 
-    const int2 p00 = D3D11ClampPixel(int2(basePosition), sourceSize);
-    const int2 p11 = D3D11ClampPixel(int2(basePosition) + int2(1, 1), sourceSize);
+    int2 p00 = D3D11ClampPixel(int2(basePosition), sourceSize);
+    int2 p11 = D3D11ClampPixel(int2(basePosition) + int2(1, 1), sourceSize);
 
-    const float3 c00 = D3D11LoadYuv420Rgb(
-        yPlane, uvPlane, sourceOrigin + uint2(p00.x, p00.y), format, range, matrix);
-    const float3 c10 = D3D11LoadYuv420Rgb(
-        yPlane, uvPlane, sourceOrigin + uint2(p11.x, p00.y), format, range, matrix);
-    const float3 c01 = D3D11LoadYuv420Rgb(
-        yPlane, uvPlane, sourceOrigin + uint2(p00.x, p11.y), format, range, matrix);
-    const float3 c11 = D3D11LoadYuv420Rgb(
-        yPlane, uvPlane, sourceOrigin + uint2(p11.x, p11.y), format, range, matrix);
+    float3 c00 = D3D11LoadYuv420Rgb(
+        yPlane, uvPlane, sourceOrigin + uint2(p00.x, p00.y), format, range, colorMatrix);
+    float3 c10 = D3D11LoadYuv420Rgb(
+        yPlane, uvPlane, sourceOrigin + uint2(p11.x, p00.y), format, range, colorMatrix);
+    float3 c01 = D3D11LoadYuv420Rgb(
+        yPlane, uvPlane, sourceOrigin + uint2(p00.x, p11.y), format, range, colorMatrix);
+    float3 c11 = D3D11LoadYuv420Rgb(
+        yPlane, uvPlane, sourceOrigin + uint2(p11.x, p11.y), format, range, colorMatrix);
 
     return lerp(lerp(c00, c10, fraction.x), lerp(c01, c11, fraction.x), fraction.y);
 }
@@ -276,8 +285,8 @@ float4 D3D11SampleLogicalRgbaPoint(
     float2 scale,
     uint format)
 {
-    const float2 sourcePosition = D3D11ResizeSourcePosition(destinationLocalPixel, scale);
-    const int2 localPixel = D3D11ClampPixel(int2(round(sourcePosition)), sourceSize);
+    float2 sourcePosition = D3D11ResizeSourcePosition(destinationLocalPixel, scale);
+    int2 localPixel = D3D11ClampPixel(int2(round(sourcePosition)), sourceSize);
     return D3D11LoadLogicalRgba(source, sourceOrigin + uint2(localPixel), format);
 }
 
@@ -289,17 +298,17 @@ float4 D3D11SampleLogicalRgbaLinear(
     float2 scale,
     uint format)
 {
-    const float2 sourcePosition = D3D11ResizeSourcePosition(destinationLocalPixel, scale);
-    const float2 basePosition = floor(sourcePosition);
-    const float2 fraction = sourcePosition - basePosition;
+    float2 sourcePosition = D3D11ResizeSourcePosition(destinationLocalPixel, scale);
+    float2 basePosition = floor(sourcePosition);
+    float2 fraction = sourcePosition - basePosition;
 
-    const int2 p00 = D3D11ClampPixel(int2(basePosition), sourceSize);
-    const int2 p11 = D3D11ClampPixel(int2(basePosition) + int2(1, 1), sourceSize);
+    int2 p00 = D3D11ClampPixel(int2(basePosition), sourceSize);
+    int2 p11 = D3D11ClampPixel(int2(basePosition) + int2(1, 1), sourceSize);
 
-    const float4 c00 = D3D11LoadLogicalRgba(source, sourceOrigin + uint2(p00.x, p00.y), format);
-    const float4 c10 = D3D11LoadLogicalRgba(source, sourceOrigin + uint2(p11.x, p00.y), format);
-    const float4 c01 = D3D11LoadLogicalRgba(source, sourceOrigin + uint2(p00.x, p11.y), format);
-    const float4 c11 = D3D11LoadLogicalRgba(source, sourceOrigin + uint2(p11.x, p11.y), format);
+    float4 c00 = D3D11LoadLogicalRgba(source, sourceOrigin + uint2(p00.x, p00.y), format);
+    float4 c10 = D3D11LoadLogicalRgba(source, sourceOrigin + uint2(p11.x, p00.y), format);
+    float4 c01 = D3D11LoadLogicalRgba(source, sourceOrigin + uint2(p00.x, p11.y), format);
+    float4 c11 = D3D11LoadLogicalRgba(source, sourceOrigin + uint2(p11.x, p11.y), format);
 
     return lerp(lerp(c00, c10, fraction.x), lerp(c01, c11, fraction.x), fraction.y);
 }
@@ -310,9 +319,9 @@ void D3D11StoreYuv420Luma(
     float3 rgb,
     uint format,
     uint range,
-    uint matrix)
+    uint colorMatrix)
 {
-    const float3 yuvSample = D3D11EncodeRgbToYuvSample(rgb, format, range, matrix);
+    float3 yuvSample = D3D11EncodeRgbToYuvSample(rgb, format, range, colorMatrix);
     yPlane[absolutePixel] = yuvSample.x;
 }
 
@@ -322,9 +331,9 @@ void D3D11StoreYuv420Chroma(
     float3 averageRgb,
     uint format,
     uint range,
-    uint matrix)
+    uint colorMatrix)
 {
-    const float3 yuvSample = D3D11EncodeRgbToYuvSample(averageRgb, format, range, matrix);
+    float3 yuvSample = D3D11EncodeRgbToYuvSample(averageRgb, format, range, colorMatrix);
     uvPlane[absoluteChromaPixel] = yuvSample.yz;
 }
 
