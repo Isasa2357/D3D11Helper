@@ -14,10 +14,6 @@
 namespace D3D11CoreLib {
 namespace Processing {
 
-// dstToSrc maps destination-local pixel coordinates to source-local pixel
-// coordinates:
-//   sx = m00 * x + m01 * y + m02
-//   sy = m10 * x + m11 * y + m12
 struct AffineTransformDesc {
     DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
     DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
@@ -32,9 +28,6 @@ struct AffineTransformDesc {
     float borderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 };
 
-// dstToSrc is a row-major 3x3 homography mapping destination-local pixel
-// coordinates to source-local pixel coordinates. The shader divides by the
-// third row value when it is non-zero.
 struct PerspectiveTransformDesc {
     DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
     DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
@@ -50,9 +43,6 @@ struct PerspectiveTransformDesc {
     float borderColor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 };
 
-// 3D LUT pass. The LUT resource must be a Texture3D whose RGB input domain is
-// [0, 1]. When lutWidth/Height/Depth are zero, the dimensions are read from the
-// resource description. The shader performs manual trilinear interpolation.
 struct Lut3DDesc {
     DXGI_FORMAT srcFormat = DXGI_FORMAT_UNKNOWN;
     DXGI_FORMAT dstFormat = DXGI_FORMAT_UNKNOWN;
@@ -84,10 +74,22 @@ public:
         D3D11Resource& dst,
         const AffineTransformDesc& desc);
 
+    void DispatchAffineTransformView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView dst,
+        const AffineTransformDesc& desc);
+
     void DispatchPerspectiveTransform(
         ID3D11DeviceContext* deviceContext,
         D3D11Resource& src,
         D3D11Resource& dst,
+        const PerspectiveTransformDesc& desc);
+
+    void DispatchPerspectiveTransformView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView dst,
         const PerspectiveTransformDesc& desc);
 
     void DispatchApplyLut3D(
@@ -97,13 +99,25 @@ public:
         D3D11Resource& dst,
         const Lut3DDesc& desc);
 
-    // Thin alias over D3D11Remapper for camera undistort/remap maps.
-    // The map texture must match RemapDesc::mapFormat, currently R32G32_FLOAT.
+    void DispatchApplyLut3DView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView lut,
+        D3D11ResourceView dst,
+        const Lut3DDesc& desc);
+
     void DispatchApplyUndistortMap(
         ID3D11DeviceContext* deviceContext,
         D3D11Resource& src,
         D3D11Resource& map,
         D3D11Resource& dst,
+        const RemapDesc& desc);
+
+    void DispatchApplyUndistortMapView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView map,
+        D3D11ResourceView dst,
         const RemapDesc& desc);
 
     D3D11Resource CreateOutputTexture(

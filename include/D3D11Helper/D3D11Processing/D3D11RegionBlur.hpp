@@ -36,6 +36,14 @@ public:
         D3D11Resource& dst,
         const RegionBlurDesc& desc);
 
+    void DispatchRegionBlurView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView blurScratch,
+        D3D11ResourceView blurred,
+        D3D11ResourceView dst,
+        const RegionBlurDesc& desc);
+
     D3D11Resource CreateOutputTexture(
         D3D11Core& core,
         UINT width,

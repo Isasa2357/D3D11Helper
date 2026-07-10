@@ -31,6 +31,12 @@ public:
         D3D11Resource& dst,
         const FusedConvertResizeDesc& desc);
 
+    void DispatchConvertResizeView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView dst,
+        const FusedConvertResizeDesc& desc);
+
     D3D11Resource CreateOutputTexture(
         D3D11Core& core,
         UINT width,

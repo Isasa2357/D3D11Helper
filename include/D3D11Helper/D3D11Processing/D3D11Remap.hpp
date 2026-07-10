@@ -32,6 +32,13 @@ public:
         D3D11Resource& dst,
         const RemapDesc& desc);
 
+    void DispatchRemapView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView map,
+        D3D11ResourceView dst,
+        const RemapDesc& desc);
+
     D3D11Resource CreateOutputTexture(
         D3D11Core& core,
         UINT width,

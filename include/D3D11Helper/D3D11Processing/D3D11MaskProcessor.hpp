@@ -32,12 +32,27 @@ public:
         D3D11Resource& dst,
         const MaskApplyDesc& desc);
 
+    void DispatchApplyMaskView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView mask,
+        D3D11ResourceView dst,
+        const MaskApplyDesc& desc);
+
     void DispatchBlendByMask(
         ID3D11DeviceContext* deviceContext,
         D3D11Resource& base,
         D3D11Resource& overlay,
         D3D11Resource& mask,
         D3D11Resource& dst,
+        const MaskBlendDesc& desc);
+
+    void DispatchBlendByMaskView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView base,
+        D3D11ResourceView overlay,
+        D3D11ResourceView mask,
+        D3D11ResourceView dst,
         const MaskBlendDesc& desc);
 
     void DispatchCombineMasks(
@@ -47,10 +62,23 @@ public:
         D3D11Resource& dst,
         const MaskCombineDesc& desc);
 
+    void DispatchCombineMasksView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView maskA,
+        D3D11ResourceView maskB,
+        D3D11ResourceView dst,
+        const MaskCombineDesc& desc);
+
     void DispatchInvertMask(
         ID3D11DeviceContext* deviceContext,
         D3D11Resource& mask,
         D3D11Resource& dst,
+        const MaskInvertDesc& desc);
+
+    void DispatchInvertMaskView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView mask,
+        D3D11ResourceView dst,
         const MaskInvertDesc& desc);
 
     D3D11Resource CreateOutputTexture(

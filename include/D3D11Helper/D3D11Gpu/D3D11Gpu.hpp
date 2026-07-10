@@ -3,9 +3,11 @@
 // D3D11Gpu.hpp - GPU building-block umbrella
 //
 // GPU groups resource, view, sampler, shader, pipeline, transfer, and binding
-// building blocks.  D3D11Framework remains as a compatibility umbrella.
+// building blocks. D3D11Framework remains as a compatibility umbrella.
 //
 #include <D3D11Helper/D3D11Gpu/D3D11Resource.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11ResourceView.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11ResourceValidation.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11StagingBuffer.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11CpuImage.hpp>
 #include <D3D11Helper/D3D11Gpu/D3D11TextureTransfer.hpp>

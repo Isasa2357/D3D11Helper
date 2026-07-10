@@ -31,10 +31,22 @@ public:
         D3D11Resource& dst,
         const ThresholdDesc& desc);
 
+    void DispatchThresholdView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView dst,
+        const ThresholdDesc& desc);
+
     void DispatchRangeThreshold(
         ID3D11DeviceContext* deviceContext,
         D3D11Resource& src,
         D3D11Resource& dst,
+        const RangeThresholdDesc& desc);
+
+    void DispatchRangeThresholdView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView dst,
         const RangeThresholdDesc& desc);
 
     void DispatchConfidenceHeatmap(
@@ -43,16 +55,34 @@ public:
         D3D11Resource& dst,
         const ConfidenceHeatmapDesc& desc);
 
+    void DispatchConfidenceHeatmapView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView dst,
+        const ConfidenceHeatmapDesc& desc);
+
     void DispatchClassColorMap(
         ID3D11DeviceContext* deviceContext,
         D3D11Resource& src,
         D3D11Resource& dst,
         const ClassColorMapDesc& desc);
 
+    void DispatchClassColorMapView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView dst,
+        const ClassColorMapDesc& desc);
+
     void DispatchMaskOverlay(
         ID3D11DeviceContext* deviceContext,
         D3D11Resource& mask,
         D3D11Resource& dst,
+        const MaskOverlayDesc& desc);
+
+    void DispatchMaskOverlayView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView mask,
+        D3D11ResourceView dst,
         const MaskOverlayDesc& desc);
 
     D3D11Resource CreateOutputTexture(

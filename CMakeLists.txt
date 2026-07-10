@@ -62,6 +62,7 @@ set(D3D11HELPER_SOURCES
     src/D3D11SharedTexture.cpp
     src/D3D11KeyedMutex.cpp
     src/D3D11Helpers.cpp
+    src/D3D11ResourceValidation.cpp
     src/D3D11SharedTextureSync.cpp
     src/D3D11StagingBuffer.cpp
     src/D3D11CpuImage.cpp
@@ -82,6 +83,7 @@ set(D3D11HELPER_SOURCES
     src/D3D11ProcessingTypes.cpp
     src/D3D11ProcessingContext.cpp
     src/D3D11ProcessingShaderCache.cpp
+    src/D3D11ProcessingResourceView.cpp
     src/D3D11TextureViews.cpp
     src/D3D11FormatConverter.cpp
     src/D3D11Resize.cpp
@@ -148,6 +150,8 @@ set(D3D11HELPER_PUBLIC_HEADERS
     include/D3D11Helper/D3D11Gpu/D3D11GraphicsPipeline.hpp
     include/D3D11Helper/D3D11Gpu/D3D11Helpers.hpp
     include/D3D11Helper/D3D11Gpu/D3D11Resource.hpp
+    include/D3D11Helper/D3D11Gpu/D3D11ResourceView.hpp
+    include/D3D11Helper/D3D11Gpu/D3D11ResourceValidation.hpp
     include/D3D11Helper/D3D11Gpu/D3D11ShaderCompiler.hpp
     include/D3D11Helper/D3D11Gpu/D3D11ShaderReflection.hpp
     include/D3D11Helper/D3D11Gpu/D3D11StagingBuffer.hpp

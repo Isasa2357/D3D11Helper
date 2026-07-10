@@ -32,6 +32,13 @@ public:
         D3D11Resource& dst,
         const CompositeDesc& desc);
 
+    void DispatchCompositeView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView base,
+        D3D11ResourceView overlay,
+        D3D11ResourceView dst,
+        const CompositeDesc& desc);
+
     D3D11Resource CreateOutputTexture(
         D3D11Core& core,
         UINT width,

@@ -31,10 +31,22 @@ public:
         D3D11Resource& dst,
         const PyramidDownsampleDesc& desc);
 
+    void DispatchDownsample2xView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView dst,
+        const PyramidDownsampleDesc& desc);
+
     void DispatchUpsample2x(
         ID3D11DeviceContext* deviceContext,
         D3D11Resource& src,
         D3D11Resource& dst,
+        const PyramidUpsampleDesc& desc);
+
+    void DispatchUpsample2xView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        D3D11ResourceView dst,
         const PyramidUpsampleDesc& desc);
 
     D3D11Resource CreateOutputTexture(
