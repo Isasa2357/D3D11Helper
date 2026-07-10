@@ -191,6 +191,41 @@ int main() {
             "DispatchConvertView output mismatch");
     });
 
+    TEST_RUN("Dispatch view exception unwinding releases borrowed resources", {
+        Fixture fixture;
+        const std::vector<uint8_t> pixels(2u * 2u * 4u, 128u);
+        auto texture = CreateTexture2DFromRGBA(
+            *fixture.core,
+            pixels.data(),
+            2,
+            2,
+            D3D11_BIND_SHADER_RESOURCE);
+
+        D3D11FormatConverter converter;
+        converter.Initialize(fixture.processing);
+
+        ID3D11Resource* raw = texture.Get();
+        const ULONG before = ProbeReferenceCount(raw);
+        FormatConvertDesc desc{};
+        desc.srcFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.dstFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+        bool threw = false;
+        try {
+            converter.DispatchConvertView(
+                fixture.core->GetImmediateContext(),
+                D3D11ResourceView(raw),
+                D3D11ResourceView(raw),
+                desc);
+        } catch (const std::exception&) {
+            threw = true;
+        }
+
+        Require(threw, "in-place DispatchConvertView did not reject the alias");
+        Require(ProbeReferenceCount(raw) == before,
+            "exception unwinding retained a borrowed COM reference");
+    });
+
     TEST_RUN("All Processing resource-view entry points are addressable", {
         (void)&D3D11FormatConverter::DispatchConvertView;
         (void)&D3D11Resizer::DispatchResizeView;
