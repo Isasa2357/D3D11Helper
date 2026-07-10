@@ -1,18 +1,21 @@
 #pragma once
 //
 // D3D11Resource.hpp
-// ID3D11Resource の薄いラッパ。
+// ID3D11Resource の薄い所有ラッパ。
 //
 // D3D12 との違い:
 //   D3D11 はドライバが状態遷移を自動管理するため、Resource State の追跡は不要。
-//   本クラスは ID3D11Resource（または Texture2D / Buffer）と D3D11_USAGE を
-//   保持するだけの軽量ラッパである.
+//   本クラスは ID3D11Resource（または Texture2D / Buffer）を ComPtr で所有する。
 //
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 
 #include <utility>
 
 namespace D3D11CoreLib {
+
+namespace Detail {
+class D3D11ScopedResourceViewAdapter;
+}
 
 class D3D11Resource {
 public:
@@ -31,7 +34,7 @@ public:
         if (m_buffer) m_buffer.As(&m_resource);
     }
 
-    ID3D11Resource*  Get() const noexcept { return m_resource.Get(); }
+    ID3D11Resource* Get() const noexcept { return m_resource.Get(); }
     explicit operator bool() const noexcept { return m_resource != nullptr; }
 
     // Texture2D / Buffer として取得する。キャッシュ済みの場合はそのまま返す。
@@ -39,6 +42,7 @@ public:
         if (!m_texture2D && m_resource) m_resource.As(&m_texture2D);
         return m_texture2D.Get();
     }
+
     ID3D11Buffer* AsBuffer() {
         if (!m_buffer && m_resource) m_resource.As(&m_buffer);
         return m_buffer.Get();
@@ -67,19 +71,20 @@ public:
     }
 
     UINT GetWidth() const {
-        auto desc = GetTexture2DDesc();
-        return desc.Width;
+        return GetTexture2DDesc().Width;
     }
+
     UINT GetHeight() const {
-        auto desc = GetTexture2DDesc();
-        return desc.Height;
+        return GetTexture2DDesc().Height;
     }
+
     DXGI_FORMAT GetFormat() const {
-        auto desc = GetTexture2DDesc();
-        return desc.Format;
+        return GetTexture2DDesc().Format;
     }
 
 private:
+    friend class Detail::D3D11ScopedResourceViewAdapter;
+
     ComPtr<ID3D11Resource>  m_resource;
     ComPtr<ID3D11Texture2D> m_texture2D; // キャッシュ（取得済みなら保持）
     ComPtr<ID3D11Buffer>    m_buffer;    // キャッシュ
