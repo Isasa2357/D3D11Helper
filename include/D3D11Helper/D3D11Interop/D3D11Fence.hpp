@@ -6,12 +6,12 @@
 #include <D3D11Helper/D3D11Foundation/D3D11Common.hpp>
 #include <D3D11Helper/D3D11Interop/D3D11SharedHandle.hpp>
 
+#include <utility>
+
 namespace D3D11CoreLib {
 
 class D3D11Fence;
 
-// Immutable fence + value pair. The ComPtr keeps the fence alive independently
-// from the D3D11Fence wrapper that created the point.
 class D3D11FencePoint {
 public:
     D3D11FencePoint() noexcept = default;
@@ -59,17 +59,10 @@ public:
     void Signal(ID3D11DeviceContext4* ctx, UINT64 value);
     void Signal(ID3D11DeviceContext* ctx, UINT64 value);
 
-    // Separately named point API to avoid adding another same-name overload to
-    // the existing Signal overload set.
     D3D11FencePoint SignalPoint(ID3D11DeviceContext* ctx, UINT64 value);
 
-    // Important: an Immediate Context has one ordered GPU timeline. Do not queue
-    // a wait for a point that only a later command on the same context can signal.
     void GpuWait(ID3D11DeviceContext4* ctx, UINT64 value);
     void GpuWait(ID3D11DeviceContext* ctx, UINT64 value);
-
-    // Waits for the fence carried by point. This supports points created by a
-    // separately opened/shared fence as well as this wrapper's own fence.
     void GpuWaitPoint(ID3D11DeviceContext* ctx, const D3D11FencePoint& point);
 
     void CpuWait(UINT64 value);
