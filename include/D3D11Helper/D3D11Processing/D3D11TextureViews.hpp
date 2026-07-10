@@ -6,6 +6,7 @@
 #include <D3D11Helper/D3D11Processing/D3D11ProcessingContext.hpp>
 #include <D3D11Helper/D3D11Framework/D3D11Helpers.hpp>
 #include <D3D11Helper/D3D11Framework/D3D11Resource.hpp>
+#include <D3D11Helper/D3D11Gpu/D3D11ResourceView.hpp>
 
 namespace D3D11CoreLib {
 namespace Processing {
@@ -31,17 +32,38 @@ D3D11TextureViewSet CreateRgbaTextureViewSet(
     bool createUav,
     DXGI_FORMAT viewFormat = DXGI_FORMAT_UNKNOWN);
 
+D3D11TextureViewSet CreateRgbaTextureViewSetView(
+    D3D11ProcessingContext& context,
+    D3D11ResourceView texture,
+    bool createSrv,
+    bool createUav,
+    DXGI_FORMAT viewFormat = DXGI_FORMAT_UNKNOWN);
+
 D3D11TextureViewSet CreateYuv420SrvViewSet(
     D3D11ProcessingContext& context,
     const D3D11Resource& texture);
+
+D3D11TextureViewSet CreateYuv420SrvViewSetView(
+    D3D11ProcessingContext& context,
+    D3D11ResourceView texture);
 
 D3D11TextureViewSet CreateYuv420UavViewSet(
     D3D11ProcessingContext& context,
     const D3D11Resource& texture);
 
+D3D11TextureViewSet CreateYuv420UavViewSetView(
+    D3D11ProcessingContext& context,
+    D3D11ResourceView texture);
+
 D3D11TextureViewSet CreateYuv420SrvUavViewSet(
     D3D11ProcessingContext& context,
     const D3D11Resource& texture,
+    bool createSrv,
+    bool createUav);
+
+D3D11TextureViewSet CreateYuv420SrvUavViewSetView(
+    D3D11ProcessingContext& context,
+    D3D11ResourceView texture,
     bool createSrv,
     bool createUav);
 
