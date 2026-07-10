@@ -23,6 +23,18 @@ struct D3D11PyramidBlurWorkspace {
     std::vector<D3D11Resource> upTextures;
 };
 
+struct D3D11PyramidBlurWorkspaceView {
+    UINT sourceWidth = 0;
+    UINT sourceHeight = 0;
+    UINT levels = 0;
+    DXGI_FORMAT format = DXGI_FORMAT_UNKNOWN;
+
+    std::vector<D3D11ResourceView> downTextures;
+    D3D11ResourceView blurScratch;
+    D3D11ResourceView blurredLow;
+    std::vector<D3D11ResourceView> upTextures;
+};
+
 class D3D11PyramidBlur {
 public:
     static constexpr UINT MaxLevels = 6;
@@ -55,6 +67,13 @@ public:
         D3D11Resource& src,
         D3D11PyramidBlurWorkspace& workspace,
         D3D11Resource& dst,
+        const PyramidBlurDesc& desc);
+
+    void DispatchPyramidBlurView(
+        ID3D11DeviceContext* deviceContext,
+        D3D11ResourceView src,
+        const D3D11PyramidBlurWorkspaceView& workspace,
+        D3D11ResourceView dst,
         const PyramidBlurDesc& desc);
 
 private:
