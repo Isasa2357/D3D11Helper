@@ -34,3 +34,8 @@ The D3D12 APIs are not copied mechanically. D3D11 receives only features that ha
 2. Non-owning resource views and full Processing coverage audit.
 3. Texture validation and scoped staging mapping.
 4. Optional fence point, final audit, and release preparation.
+
+## Current status
+
+- Phase 1 is complete and validated in Debug and Release.
+- Phase 2 begins with `D3D11ResourceView`, Texture2D validation, and the format-convert / resize / fused Processing paths before expanding to the remaining processors.
