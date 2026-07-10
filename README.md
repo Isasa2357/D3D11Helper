@@ -2,49 +2,54 @@
 
 **Direct3D 11** の定型処理を薄くラップした **C++17 ヘルパライブラリ**です。
 
-v1.1.0 でモジュール構成を整理し、v1.2.0 で `Texture2D` と CPU メモリ間の transfer API、v1.3.0 で render target / swapchain / resize / present 周辺の Presentation helper、v1.4.0 で compute-stage binding helper、v1.5.0 で Diagnostics helper、v1.6.0 で Copy / Resolve / Mipmap helper、v1.7.0 で advanced View / State helper、v1.8.0 で shared handle / shared texture / keyed mutex / D3D11.4 Fence interop helper を追加しています。
+v1.13.0では、D3D11に自然な形で汎用GPU基盤を拡張しました。NV12/P010対応YUV HLSL primitive、非所有`D3D11ResourceView`、Texture2D validation、Scoped staging map、D3D11.4 interop向けFence Pointを追加しています。
 
 ```text
-D3D11Foundation   DirectX / DXGI only の基礎 utility
+D3D11Foundation   DirectX / DXGI only の基礎utility
 D3D11Core         Device / Immediate Context / Deferred Context / DXGI facade
-D3D11Gpu          Resource / View / State / Sampler / Shader / Pipeline / Transfer / Copy / Resolve / Mipmap / Binding
+D3D11Gpu          Resource / View / Validation / State / Pipeline / Transfer / Copy / Resolve / Mipmap
 D3D11Presentation RenderTarget / SwapChain / BackBuffer / Resize / Present
-D3D11Processing   GPU 画像処理
-D3D11Interop      SharedHandle / SharedTexture / KeyedMutex / D3D11.4 Fence / D3D11-D3D12 interop
+D3D11Processing   GPU画像処理と再利用可能なHLSL関数ライブラリ
+D3D11Interop      SharedHandle / SharedTexture / KeyedMutex / D3D11.4 Fence / Fence Point
 D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer / Profiler
 ```
 
-旧 `D3D11Framework/*` および一部の旧 `D3D11Core/*` ヘッダは、v1.x 互換のため wrapper として残しています。新規コードでは、上記の新モジュールパスを使うことを推奨します。
+旧`D3D11Framework/*`および一部の旧`D3D11Core/*`ヘッダは、v1.x互換のためwrapperとして残しています。新規コードでは上記のモジュールパスを推奨します。
 
-> 姉妹プロジェクト [D3D12Helper](https://github.com/Isasa2357/D3D12Helper) と、細部の API ではなく「提供する機能カテゴリ」と「モジュール構成」が揃うことを目標にしています。
+> 姉妹プロジェクト[D3D12Helper](https://github.com/Isasa2357/D3D12Helper)と、APIの機械的な一致ではなく、提供する機能カテゴリとモジュール構成を揃える方針です。
 
 ---
 
 ## Release notes
 
-### v1.11.1 - CMake standalone hardening
+### v1.13.0 - Generic GPU foundation
 
-- `sample/` 単体から `cmake -S sample -B ...` できる standalone configure fallback を追加。
-- `Test/` 単体から `cmake -S Test -B ...` できる standalone configure fallback を追加。
-- root からの通常ビルドでは既存の `D3D11Helper::D3D11Helper` target を使い続けるため、従来のビルド経路は維持。
-- `CMakeLists.txt` の project version を `1.11.1` に更新。
+- NV12/P010、BT.601/709/2020、Full/Limited、Point/Linear対応の`YuvPrimitives.hlsli`を追加。
+- 外部所有`ID3D11Resource`をAddRefせず参照する`D3D11ResourceView`を追加。
+- 全Processing processorに別名`*View` dispatch経路を追加。
+- Texture2Dのdevice、size、format、mip、array、sample、usage、flagsをまとめて検証するAPIを追加。
+- move-only `D3D11MappedSubresource`と`D3D11StagingBuffer::MapScoped()`を追加。
+- D3D11.4 / D3D12 interop向け`D3D11FencePoint`を追加。
+- CPU/GPU golden test、planar storage readback、COM参照数、例外経路、install/package smoke testを拡充。
+- 既存`Dispatch*`、`Map()` / `Unmap()`、`Signal()` / `GpuWait()` / `CpuWait()`のsignatureと挙動を維持。
+
+詳細は[`doc/ReleaseNotes_v1.13.0.md`](doc/ReleaseNotes_v1.13.0.md)を参照してください。
 
 ---
 
 ## 特徴
 
-- **DirectX / DXGI 中心** — PNG / JPEG / 動画エンコードなどの file/media I/O は本体に含めず、上位ライブラリへ分離する方針。
-- **D3D11Core** — device / immediate context / deferred context / DXGI を束ねる facade。
-- **D3D11Gpu** — buffer / texture / view / state / sampler / shader compiler / compute pipeline / graphics pipeline / staging / CPU transfer / copy / resolve / mipmap / binding helper を提供。
-- **D3D11Presentation** — offscreen render target、window swapchain、backbuffer RTV、optional depth/stencil、viewport、clear、present、resize を提供。
-- **D3D11Diagnostics** — Debug Layer、InfoQueue、LiveObject report、device lost 判定、GPU timestamp timer、single-frame GPU profiler を提供。
-- **D3D11Processing** — GPU 上で format conversion、resize、remap、composite、blur、region effect、mask、threshold、pyramid、fused pipeline などを実行。単体 C++ processor はショートカットであり、実務的な連続処理は `shaders/D3D11Processing/*.hlsli` を include した独自 fused HLSL として 1 dispatch にまとめる方針。
-- **D3D11Interop** — owned shared handle、shared Texture2D、keyed mutex、D3D11.4 Fence support check、D3D11/D3D12 interop 向け同期補助を提供。
-- **D3D12Helper と対称的な設計** — D3D11 固有の自然な API を保ちつつ、モジュールと機能カテゴリを合わせる。
+- **DirectX / DXGI中心** — PNG、JPEG、動画codec、Media Foundation、NVENCなどのfile/media I/Oは上位ライブラリへ分離。
+- **D3D11Core** — device、immediate context、deferred context、DXGIを束ねるfacade。
+- **D3D11Gpu** — resource、view、validation、state、shader、pipeline、staging、CPU transfer、copy、resolve、mipmap、binding helper。
+- **D3D11Presentation** — offscreen render target、window swapchain、backbuffer、depth/stencil、viewport、present、resize。
+- **D3D11Diagnostics** — Debug Layer、InfoQueue、LiveObject report、device lost判定、GPU timer、profiler。
+- **D3D11Processing** — format conversion、resize、remap、composite、blur、region effect、mask、threshold、pyramid、fused pipeline。
+- **D3D11Interop** — shared handle、shared texture、keyed mutex、D3D11.4 Fence、D3D11/D3D12同期。
 
 ---
 
-## 基本 include
+## 基本include
 
 ```cpp
 #include <D3D11Helper/D3D11Core/D3D11Core.hpp>
@@ -52,227 +57,187 @@ D3D11Diagnostics  Debug Layer / InfoQueue / LiveObject / DeviceLost / GPU Timer 
 #include <D3D11Helper/D3D11Presentation/D3D11Presentation.hpp>
 #include <D3D11Helper/D3D11Diagnostics/D3D11Diagnostics.hpp>
 #include <D3D11Helper/D3D11Processing/D3D11Processing.hpp>
-```
-
----
-
-## Processing の考え方
-
-`D3D11FormatConverter` や `D3D11Resizer` は、Processing Layer の単体機能をすぐ使うためのショートカットです。Processing Layer の本体は、HLSL 関数ライブラリ、format / plane view 作成、constant buffer、validation、compute pipeline 実行基盤を含むレイヤーです。
-
-複数処理が連続する実アプリでは、ショートカットを何回も呼ぶより、`ProcessingCommon.hlsli` や `ColorSpace.hlsli` を include して、アプリ側の fused shader にまとめることを推奨します。例: `sample/25_ProcessingCustomFusedShader`。
-
----
-
-## Interop
-
-v1.8.0 以降では、`D3D11Interop` に shared handle / shared texture / keyed mutex / D3D11.4 Fence helper が追加されています。
-
-```cpp
 #include <D3D11Helper/D3D11Interop/D3D11Interop.hpp>
-
-D3D11SharedTexture2DDesc desc = {};
-desc.width = 1280;
-desc.height = 720;
-desc.format = DXGI_FORMAT_R8G8B8A8_UNORM;
-desc.bindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-desc.syncMode = D3D11SharedTextureSyncMode::KeyedMutex;
-
-D3D11SharedTexture2D shared = CreateSharedTexture2DWithHandle(core->GetDevice(), desc);
-
-D3D11KeyedMutex mutex(shared.Get());
-mutex.AcquireOrThrow(0, 1000);
-// use shared texture
-mutex.Release(1);
-
-D3D11FenceSupportInfo fenceSupport = CheckD3D11FenceSupport(
-    core->GetDevice(),
-    core->GetImmediateContext());
-
-if (fenceSupport.supported) {
-    D3D11Fence fence;
-    fence.Initialize(core->GetDevice());
-    fence.Signal(core->GetImmediateContext(), 1);
-    core->Flush();
-    fence.CpuWait(1);
-}
 ```
-
-`D3D11SharedHandle` は NT shared handle の所有を RAII 化します。raw `HANDLE` を返す既存 API も互換のため維持しています。
 
 ---
-## 最小例: Core 作成
+
+## Non-owning Resource View
+
+`D3D11ResourceView`はraw `ID3D11Resource*`を保持する非所有viewです。生成、コピー、代入、破棄では`AddRef` / `Release`を行いません。
 
 ```cpp
-#include <D3D11Helper/D3D11Core/D3D11Core.hpp>
+D3D11ResourceView srcView(externalSrcTexture);
+D3D11ResourceView dstView(externalDstTexture);
 
-using namespace D3D11CoreLib;
+D3D11FormatConverter converter;
+converter.Initialize(processingContext);
+converter.DispatchConvertView(
+    core->GetImmediateContext(),
+    srcView,
+    dstView,
+    convertDesc);
+```
 
-int main() {
-    D3D11CoreConfig config;
-    config.enableDebugLayer = true;
-    config.enableInfoQueue = true;
+既存の所有型`D3D11Resource`と既存`Dispatch*` APIはそのまま利用できます。新APIは同名overloadではなく`*View`という別名なので、既存のaddress-of expressionを曖昧にしません。
 
-    auto core = D3D11Core::CreateShared(config);
-    core->Flush();
-    return 0;
+Immediate Context利用時も、GPUがresourceを利用している期間は外部ownerがresourceを保持してください。Deferred Contextではcommand listの実行完了まで保持が必要です。
+
+---
+
+## Texture2D validation
+
+```cpp
+D3D11Texture2DRequirement requirement;
+requirement.device = core->GetDevice();
+requirement.width = 1920;
+requirement.height = 1080;
+requirement.format = DXGI_FORMAT_NV12;
+requirement.mipLevels = 1;
+requirement.arraySize = 1;
+requirement.sampleCount = 1;
+requirement.requiredBindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+D3D11ValidationResult result = ValidateTexture2DView(view, requirement);
+if (!result) {
+    std::cerr << result.Message() << '\n';
 }
 ```
+
+throwing版の`ValidateTexture2DViewOrThrow()`と、所有`D3D11Resource`用のconvenience wrapperも提供します。
+
+---
+
+## Scoped staging map
+
+既存のmanual `Map()` / `Unmap()`に加えて、RAIIで自動`Unmap()`する`MapScoped()`を利用できます。
+
+```cpp
+D3D11StagingBuffer staging;
+staging.InitializeAsTexture2D(
+    core->GetDevice(), width, height, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+core->GetImmediateContext()->CopyResource(staging.Get(), sourceTexture);
+
+{
+    auto mapped = staging.MapScoped(core->GetImmediateContext());
+    const std::byte* data = mapped.DataAs<std::byte>();
+    const UINT rowPitch = mapped.RowPitch();
+    const UINT depthPitch = mapped.DepthPitch();
+    // read data
+} // automatic Unmap
+```
+
+`D3D11MappedSubresource`はmove-onlyです。`D3D11StagingBuffer`と`ID3D11DeviceContext`はguardより長く生存させてください。
+
+---
+
+## YUV HLSL primitives
+
+`shaders/D3D11Processing/YuvPrimitives.hlsli`は、アプリケーション所有のfused shaderから利用できるformat-awareなHLSL関数群です。
+
+対応内容:
+
+```text
+NV12 / P010
+BT.601 / BT.709 / BT.2020
+Full / Limited Range
+Point / Linear resize sampling
+Y / UV plane store
+```
+
+P010では10-bit video codeが16-bit wordの上位10bitに格納されるため、`code << 6`を明示的に扱います。
+
+```hlsl
+#include "ProcessingCommon.hlsli"
+#include "YuvPrimitives.hlsli"
+
+float3 rgb = D3D11SampleYuv420RgbLinear(
+    YPlane,
+    UVPlane,
+    destinationPixel,
+    sourceOrigin,
+    sourceSize,
+    scale,
+    SrcFormat,
+    SrcRange,
+    SrcMatrix);
+```
+
+単体C++ processorは簡単に使うためのshortcutです。複数処理を連続して行う場合は、HLSL primitiveをincludeした独自shaderへまとめ、1 dispatchに融合することを推奨します。例は`sample/25_ProcessingCustomFusedShader`を参照してください。
+
+---
+
+## Fence Point
+
+D3D11.4 / D3D12 interopでは、Fenceと値をまとめた`D3D11FencePoint`を利用できます。
+
+```cpp
+D3D11Fence fence;
+fence.Initialize(core->GetDevice());
+
+auto point = fence.SignalPoint(core->GetImmediateContext(), 1);
+core->Flush();
+point.CpuWait();
+```
+
+別のdevice/contextで待つ場合は`GpuWaitPoint()`を利用します。
+
+```cpp
+otherFence.GpuWaitPoint(otherContext, point);
+```
+
+D3D11 Immediate Contextは単一のordered GPU timelineです。同一Contextで、後続Signalだけが満たす値を先にWaitすると自己deadlockします。Fence PointはD3D11/D3D12 interopまたは独立して進行するcontext間同期を主用途とします。
 
 ---
 
 ## Texture transfer
 
-v1.2.0 以降では、D3D11 texture と CPU memory の橋渡しとして `D3D11CpuImage` と `D3D11TextureTransfer` を使えます。
-
 ```cpp
-D3D11CpuImage image = CreateCpuImage(640, 480, DXGI_FORMAT_R8G8B8A8_UNORM);
+D3D11CpuImage image = CreateCpuImage(
+    640, 480, DXGI_FORMAT_R8G8B8A8_UNORM);
 
 D3D11Resource texture = CreateTexture2DFromCpuImage(*core, image);
 D3D11CpuImage readback = ReadbackTexture2DToCpuImage(*core, texture);
 ```
 
-D3D11Helper 本体は PNG / JPEG / MP4 / NVENC / Media Foundation などの file/media I/O を持ちません。上位ライブラリは `D3D11CpuImage` を境界として実装します。
+`D3D11CpuImage`はraw CPU memory containerであり、画像ファイル形式のload/saveは行いません。
 
----
-
-## View / State helpers
-
-v1.7.0 以降では、`D3D11Gpu` に advanced view helper と state preset helper が追加されています。
-
-```cpp
-#include <D3D11Helper/D3D11Gpu/D3D11Gpu.hpp>
-
-D3D11Texture2DArrayViewDesc arrayView = {};
-arrayView.firstArraySlice = 0;
-arrayView.arraySize = 2;
-auto srv = CreateTexture2DArraySrv(core->GetDevice(), textureArray.Get(), arrayView);
-
-auto depthDsv = CreateDepthTexture2DDsv(core->GetDevice(), depthTexture.Get());
-auto depthSrv = CreateDepthTexture2DSrv(core->GetDevice(), depthTexture.Get());
-
-auto sampler = CreateSamplerState(core->GetDevice(), StatePresets::SamplerLinearClamp());
-auto rasterizer = CreateRasterizerState(core->GetDevice(), StatePresets::RasterizerCullBack());
-auto blend = CreateBlendState(core->GetDevice(), StatePresets::BlendAlpha());
-auto depth = CreateDepthStencilState(core->GetDevice(), StatePresets::DepthDefault());
-```
-
-`D3D11View` は Texture2D array / cube / cube array / depth / typed buffer / structured buffer / raw buffer view を補助します。`D3D11State` は sampler / rasterizer / blend / depth-stencil state descriptor preset と state object 作成 helper を提供します。
 ---
 
 ## Copy / Resolve / Mipmap
 
-v1.6.0 以降では、D3D11 resource 間の基本的な copy、MSAA resolve、automatic mip generation を `D3D11Gpu` で扱えます。
-
 ```cpp
-#include <D3D11Helper/D3D11Gpu/D3D11Gpu.hpp>
+CopyTexture2D(
+    core->GetImmediateContext(), dstTexture.Get(), srcTexture.Get());
 
-CopyTexture2D(core->GetImmediateContext(), dstTexture.Get(), srcTexture.Get());
-
-D3D11Texture2DRegion region = {};
-region.srcX = 16;
-region.srcY = 16;
-region.dstX = 0;
-region.dstY = 0;
-region.width = 128;
-region.height = 128;
-CopyTexture2DRegion(core->GetImmediateContext(), dstTexture.Get(), srcTexture.Get(), region);
-
-ResolveTexture2D(core->GetImmediateContext(), singleSampleTexture.Get(), msaaTexture.Get());
+ResolveTexture2D(
+    core->GetImmediateContext(), singleSampleTexture.Get(), msaaTexture.Get());
 
 if (CanGenerateMipsForTexture2D(core->GetDevice(), mipTexture.Get())) {
-    auto srv = CreateMipGenerationTexture2DSRV(core->GetDevice(), mipTexture.Get());
+    auto srv = CreateMipGenerationTexture2DSRV(
+        core->GetDevice(), mipTexture.Get());
     GenerateMips(core->GetImmediateContext(), srv.Get());
 }
 ```
-
-`D3D11Copy` / `D3D11Resolve` / `D3D11Mipmap` は Direct3D 11 の低レベル API を薄く包む helper です。format conversion、CPU readback、file I/O は扱いません。
 
 ---
 
 ## Presentation
 
-v1.3.0 以降では、offscreen render target と window swapchain を `D3D11Presentation` で扱えます。
-
 ```cpp
-D3D11RenderTargetDesc rtDesc = {};
-rtDesc.width = 1280;
-rtDesc.height = 720;
-rtDesc.colorFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-rtDesc.depthFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+D3D11SwapChainDesc desc;
+desc.hwnd = hwnd;
+desc.width = 1280;
+desc.height = 720;
+desc.createDepthStencil = true;
 
-auto target = CreateRenderTarget(*core, rtDesc);
-target.Clear(core->GetImmediateContext());
-target.BindAndSetViewport(core->GetImmediateContext());
-```
-
-window 表示では `D3D11SwapChain` が backbuffer RTV / optional DSV / resize / present を管理します。
-
-```cpp
-D3D11SwapChainDesc scDesc = {};
-scDesc.hwnd = hwnd;
-scDesc.width = 1280;
-scDesc.height = 720;
-scDesc.createDepthStencil = true;
-
-auto swapChain = CreateSwapChain(*core, scDesc);
-
+auto swapChain = CreateSwapChain(*core, desc);
 swapChain.Clear(core->GetImmediateContext());
 swapChain.BindAndSetViewport(core->GetImmediateContext());
-// draw...
+// draw
 swapChain.Present(1, 0);
 ```
-
----
-
-## Compute binding
-
-v1.4.0 以降では、compute-stage の SRV / UAV / constant buffer / sampler を `D3D11ComputeBindingSet` でまとめて扱えます。
-
-```cpp
-D3D11ComputeBindingSet bindings;
-bindings.SetShaderResource(0, srv.Get());
-bindings.SetUnorderedAccess(0, uav.Get());
-bindings.SetConstantBuffer(0, constantBuffer.Get());
-bindings.SetSampler(0, sampler.Get());
-
-{
-    D3D11ScopedComputeBindings scoped(core->GetImmediateContext(), bindings);
-    // dispatch...
-}
-
-D3D11UnbindComputeResources(core->GetImmediateContext());
-```
-
-binding set は non-owning です。登録した view / buffer / sampler の lifetime は呼び出し側が管理します。
-
----
-
-## Diagnostics
-
-v1.5.0 以降では、device lost 判定、InfoQueue helper、GPU timer、GPU profiler を `D3D11Diagnostics` で扱えます。
-
-```cpp
-#include <D3D11Helper/D3D11Diagnostics/D3D11Diagnostics.hpp>
-
-const auto lost = CheckDeviceLost(core->GetDevice());
-if (lost.deviceLost) {
-    std::cout << "Device lost: " << lost.name << "\n";
-}
-
-D3D11GpuTimer timer;
-timer.Initialize(core->GetDevice());
-timer.Begin(core->GetImmediateContext());
-timer.End(core->GetImmediateContext());
-core->Flush();
-
-const auto result = timer.Resolve(core->GetImmediateContext(), true);
-if (result.completed && result.valid) {
-    std::cout << result.milliseconds << " ms\n";
-}
-```
-
-`D3D11GpuProfiler` は、1 frame 内の named sample を計測する simple single-frame profiler です。
 
 ---
 
@@ -281,65 +246,51 @@ if (result.completed && result.valid) {
 代表的なサンプル:
 
 ```text
-sample/03_HelloTriangle         low-level swapchain helper example
-sample/18_TextureTransfer       Texture2D <-> D3D11CpuImage transfer
-sample/19_PresentationWindow    D3D11SwapChain window render-loop sample
-sample/20_ComputeBindingSet     compute-stage binding helper sample
-sample/21_Diagnostics           device lost / InfoQueue / GPU timer / profiler sample
-sample/22_CopyResolveMipmap     copy / resolve / mipmap helper sample
-sample/23_ViewState             advanced view / state helper sample
-sample/24_Interop               shared texture / keyed mutex / fence interop sample
-sample/25_ProcessingCustomFusedShader  HLSL library based custom fused Processing sample
+sample/03_HelloTriangle
+sample/07_ProcessingFusedConvertResize
+sample/08_ProcessingP010Rgba16
+sample/18_TextureTransfer
+sample/19_PresentationWindow
+sample/20_ComputeBindingSet
+sample/21_Diagnostics
+sample/22_CopyResolveMipmap
+sample/23_ViewState
+sample/24_Interop
+sample/25_ProcessingCustomFusedShader
 ```
 
 ---
 
 ## ビルド
 
-Visual Studio / CMake を使います。
-
 ```bat
 cmake -S . -B out/build/default -G "Visual Studio 17 2022" -A x64
 cmake --build out/build/default --config Debug --parallel
-ctest --test-dir out/build/default -C Debug --output-on-failure
+ctest --test-dir out/build/default -C Debug --parallel --output-on-failure
 ```
 
-または、リポジトリ付属の `build_and_test.cmd` を使えます。
-
-```bat
-build_and_test.cmd
-```
+またはリポジトリ付属の`build_and_test.cmd`を利用できます。
 
 ---
 
 ## ドキュメント
 
-詳しくは [`doc/README.md`](doc/README.md) を参照してください。
-
-主要ファイル:
-
+- [`doc/README.md`](doc/README.md)
 - [`doc/Architecture.md`](doc/Architecture.md)
 - [`doc/D3D11Gpu.md`](doc/D3D11Gpu.md)
-- [`doc/D3D11BindingSet.md`](doc/D3D11BindingSet.md)
+- [`doc/D3D11Processing.md`](doc/D3D11Processing.md)
 - [`doc/D3D11TextureTransfer.md`](doc/D3D11TextureTransfer.md)
-- [`doc/D3D11Copy.md`](doc/D3D11Copy.md)
-- [`doc/D3D11Resolve.md`](doc/D3D11Resolve.md)
-- [`doc/D3D11Mipmap.md`](doc/D3D11Mipmap.md)
-- [`doc/D3D11View.md`](doc/D3D11View.md)
-- [`doc/D3D11State.md`](doc/D3D11State.md)
 - [`doc/D3D11Presentation.md`](doc/D3D11Presentation.md)
 - [`doc/D3D11Diagnostics.md`](doc/D3D11Diagnostics.md)
-- [`doc/D3D11GpuTimer.md`](doc/D3D11GpuTimer.md)
-- [`doc/D3D11GpuProfiler.md`](doc/D3D11GpuProfiler.md)
-- [`doc/D3D11Processing.md`](doc/D3D11Processing.md)
-- [`doc/Patterns.md`](doc/Patterns.md)
+- [`doc/GenericGpuFoundationD3D11FinalAudit.md`](doc/GenericGpuFoundationD3D11FinalAudit.md)
+- [`doc/ReleaseNotes_v1.13.0.md`](doc/ReleaseNotes_v1.13.0.md)
 - [`CHANGELOG.md`](CHANGELOG.md)
 
 ---
 
 ## 非目標
 
-D3D11Helper 本体には以下を含めません。
+D3D11Helper本体には以下を含めません。
 
 ```text
 PNG / JPEG / BMP / DDS load/save
@@ -349,4 +300,4 @@ Application renderer / scene graph / UI framework
 GPU profiler file export / Chrome trace export
 ```
 
-これらは D3D11Helper の上位ライブラリで実装する方針です。
+これらはD3D11Helperの上位ライブラリで実装する方針です。
