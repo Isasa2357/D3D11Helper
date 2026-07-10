@@ -4,6 +4,7 @@
 #include <D3D11Helper/D3D11Gpu/D3D11StagingBuffer.hpp>
 #include <D3D11Helper/D3D11Foundation/ThrowIfFailed.hpp>
 
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
