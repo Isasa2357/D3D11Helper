@@ -3,7 +3,7 @@
 
 RWTexture2D<float4> Dst : register(u0);
 
-float3 DecodeKnownCode(float3 code, uint format, uint range, uint matrix)
+float3 DecodeKnownCode(float3 code, uint format, uint range, uint colorMatrix)
 {
     const float3 sampleValue = D3D11YuvCodeToSample(code, format);
     return D3D11DecodeYuvSample(
@@ -11,7 +11,7 @@ float3 DecodeKnownCode(float3 code, uint format, uint range, uint matrix)
         sampleValue.yz,
         format,
         range,
-        matrix);
+        colorMatrix);
 }
 
 [numthreads(8, 1, 1)]
