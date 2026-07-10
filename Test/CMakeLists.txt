@@ -143,6 +143,10 @@ add_d3d11_test(test_yuv_hlsl_primitives test_yuv_hlsl_primitives.cpp 120)
 target_compile_definitions(test_yuv_hlsl_primitives PRIVATE
     D3D11HELPER_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
 )
+add_d3d11_test(test_resource_view test_resource_view.cpp 120)
+target_compile_definitions(test_resource_view PRIVATE
+    D3D11HELPER_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
+)
 add_d3d11_test(test_processing_effect_golden test_processing_effect_golden.cpp 120)
 add_d3d11_test(test_processing_mask_composition_golden test_processing_mask_composition_golden.cpp 120)
 add_d3d11_test(test_processing_pyramid_golden test_processing_pyramid_golden.cpp 120)
